@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ISO 2859-1 Sampling Tool</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#003f53">
+<link rel="icon" href="/icons/icon-192.png">
+<style>
+:root{
+  --bg:#EEF0E9;
+  --surface:#FFFFFF;
+  --surface-2:#F5F6F0;
+  --border:#D9DCD1;
+  --ink:#1C231E;
+  --ink-soft:#57614E;
+  --ink-faint:#8A9384;
+  --accent:#2B5C56;
+  --accent-strong:#173733;
+  --accent-soft:#DCE8E3;
+  --good:#2F7A4F;
+  --good-bg:#E3F1E6;
+  --bad:#B23B3B;
+  --bad-bg:#FBE8E6;
+  --walk:#93641E;
+  --walk-bg:#F3E7CE;
+  --shadow: 0 1px 2px rgba(20,30,20,.06), 0 6px 20px rgba(20,30,20,.06);
+}
+:root[data-theme="dark"]{
+  --bg:#12160F;
+  --surface:#1B221B;
+  --surface-2:#212A20;
+  --border:#333F30;
+  --ink:#E8ECE2;
+  --ink-soft:#AAB59E;
+  --ink-faint:#6E7A66;
+  --accent:#7AC2B4;
+  --accent-strong:#9EDAD0;
+  --accent-soft:#1E3B36;
+  --good:#7FD79B;
+  --good-bg:#173420;
+  --bad:#E68C8C;
+  --bad-bg:#3A1F1E;
+  --walk:#E3B96A;
+  --walk-bg:#3A2E16;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12160F;
+    --surface:#1B221B;
+    --surface-2:#212A20;
+    --border:#333F30;
+    --ink:#E8ECE2;
+    --ink-soft:#AAB59E;
+    --ink-faint:#6E7A66;
+    --accent:#7AC2B4;
+    --accent-strong:#9EDAD0;
+    --accent-soft:#1E3B36;
+    --good:#7FD79B;
+    --good-bg:#173420;
+    --bad:#E68C8C;
+    --bad-bg:#3A1F1E;
+    --walk:#E3B96A;
+    --walk-bg:#3A2E16;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:-apple-system,"Segoe UI",system-ui,sans-serif;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--accent-soft);}
+
+.wrap{max-width:1180px;margin:0 auto;padding:2.5rem 1.5rem 5rem;}
+
+/* ---------- Header ---------- */
+header.masthead{
+  display:flex;
+  flex-direction:column;
+  gap:.35rem;
+  margin-bottom:2.25rem;
+  padding-bottom:1.5rem;
+  border-bottom:1px solid var(--border);
+}
+.eyebrow{
+  font-family:"Bahnschrift","DIN Alternate","Arial Narrow",system-ui,sans-serif;
+  font-size:.72rem;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--accent);
+  font-weight:600;
+}
+h1{
+  font-family:"Bahnschrift","DIN Alternate","Arial Narrow",system-ui,sans-serif;
+  font-weight:700;
+  font-size:clamp(1.6rem,3vw,2.35rem);
+  letter-spacing:.01em;
+  margin:0;
+  text-wrap:balance;
+  color:var(--ink);
+}
+.sub{
+  color:var(--ink-soft);
+  font-size:.98rem;
+  max-width:62ch;
+}
+
+/* ---------- Console (inputs + result) ---------- */
+.console{
+  display:grid;
+  grid-template-columns: minmax(280px,360px) 1fr;
+  gap:1.25rem;
+  margin-bottom:2.5rem;
+}
+@media (max-width:800px){ .console{grid-template-columns:1fr;} }
+
+.panel{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  box-shadow:var(--shadow);
+  padding:1.5rem;
+}
+.panel h2{
+  font-family:"Bahnschrift","DIN Alternate","Arial Narrow",system-ui,sans-serif;
+  font-size:.78rem;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--ink-faint);
+  margin:0 0 1.1rem;
+  font-weight:600;
+}
+
+.field{display:flex;flex-direction:column;gap:.35rem;margin-bottom:1.1rem;}
+.field:last-child{margin-bottom:0;}
+label{font-size:.85rem;color:var(--ink-soft);font-weight:600;}
+input[type="number"], select{
+  font:inherit;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:.95rem;
+  padding:.55rem .65rem;
+  border-radius:7px;
+  border:1px solid var(--border);
+  background:var(--surface-2);
+  color:var(--ink);
+  width:100%;
+}
+select{font-family:inherit;}
+input:focus, select:focus{
+  outline:2px solid var(--accent);
+  outline-offset:1px;
+  border-color:var(--accent);
+}
+.radio-row{display:flex;gap:.5rem;flex-wrap:wrap;}
+.radio-row label{
+  display:flex;align-items:center;gap:.4rem;
+  font-weight:500;font-size:.85rem;
+  border:1px solid var(--border);
+  border-radius:999px;
+  padding:.35rem .75rem;
+  cursor:pointer;
+  background:var(--surface-2);
+  color:var(--ink-soft);
+}
+.radio-row input{width:auto;accent-color:var(--accent);}
+.radio-row label:has(input:checked){
+  border-color:var(--accent);
+  color:var(--accent-strong);
+  background:var(--accent-soft);
+  font-weight:700;
+}
+
+/* ---------- Result readout ---------- */
+.result{
+  display:flex;
+  flex-direction:column;
+  gap:1.1rem;
+}
+.result-top{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:1rem;
+  flex-wrap:wrap;
+}
+.readout-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:.85rem;
+}
+.stat{
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:.85rem 1rem;
+}
+.stat .k{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;}
+.stat .v{
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-variant-numeric:tabular-nums;
+  font-size:1.55rem;
+  font-weight:600;
+  color:var(--ink);
+}
+.stat.accent .v{color:var(--accent-strong);}
+
+.verdict{
+  border-radius:9px;
+  padding:1rem 1.15rem;
+  display:flex;
+  gap:.85rem;
+  align-items:flex-start;
+  border:1px solid transparent;
+}
+.verdict .chip{
+  flex:0 0 auto;
+  font-family:"Bahnschrift","DIN Alternate",system-ui,sans-serif;
+  font-weight:700;
+  font-size:.7rem;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  padding:.3rem .65rem;
+  border-radius:999px;
+}
+.verdict.good{background:var(--good-bg);color:var(--good);}
+.verdict.good .chip{background:var(--good);color:var(--good-bg);}
+.verdict.bad-none{background:var(--walk-bg);color:var(--walk);}
+.verdict.bad-none .chip{background:var(--walk);color:var(--walk-bg);}
+.verdict p{margin:0;color:inherit;font-size:.92rem;line-height:1.5;}
+.verdict strong{font-weight:700;}
+
+.note{
+  font-size:.82rem;
+  color:var(--ink-faint);
+  border-top:1px dashed var(--border);
+  padding-top:.85rem;
+}
+
+/* ---------- Reference section ---------- */
+section.ref{margin-bottom:2.25rem;}
+section.ref h2{
+  font-family:"Bahnschrift","DIN Alternate","Arial Narrow",system-ui,sans-serif;
+  font-size:1.05rem;
+  font-weight:700;
+  margin:0 0 .25rem;
+}
+section.ref .lede{color:var(--ink-soft);font-size:.9rem;margin:0 0 1rem;max-width:70ch;}
+
+.table-scroll{
+  overflow-x:auto;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:var(--surface);
+  box-shadow:var(--shadow);
+}
+table{
+  border-collapse:collapse;
+  width:100%;
+  font-size:.82rem;
+}
+table.mastertable{font-size:.74rem;}
+th,td{
+  padding:.4rem .55rem;
+  text-align:center;
+  border-bottom:1px solid var(--border);
+  border-right:1px solid var(--border);
+  white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+}
+th{
+  background:var(--surface-2);
+  color:var(--ink-soft);
+  font-weight:600;
+  position:sticky;
+  top:0;
+}
+td.rowhead, th.rowhead{
+  position:sticky;
+  left:0;
+  background:var(--surface-2);
+  font-weight:700;
+  color:var(--ink);
+  z-index:1;
+}
+td.arrow{color:var(--ink-faint);font-size:.9em;}
+td.pair{color:var(--ink);}
+td.pair .ac{color:var(--good);font-weight:700;}
+td.pair .re{color:var(--bad);font-weight:700;}
+td.hit{background:var(--accent-soft) !important;outline:2px solid var(--accent);outline-offset:-2px;}
+td.hit .ac, td.hit .re{filter:none;}
+tr.rowhit td.rowhead{background:var(--accent-soft);color:var(--accent-strong);}
+td.col-hit-header, th.col-hit-header{background:var(--accent-soft) !important;color:var(--accent-strong) !important;}
+
+.legend{
+  display:flex;gap:1.25rem;flex-wrap:wrap;
+  font-size:.78rem;color:var(--ink-soft);
+  margin-top:.65rem;
+}
+.legend span{display:inline-flex;align-items:center;gap:.4rem;}
+.legend .swatch{width:.7rem;height:.7rem;border-radius:3px;display:inline-block;}
+
+.howto{
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:1.15rem 1.35rem;
+  margin-bottom:1.1rem;
+}
+.howto ol{
+  margin:0 0 .9rem;
+  padding-left:1.3rem;
+  display:flex;
+  flex-direction:column;
+  gap:.55rem;
+}
+.howto li{font-size:.9rem;color:var(--ink-soft);}
+.howto li strong{color:var(--ink);}
+.howto .example{
+  margin:0 0 .8rem;
+  font-size:.87rem;
+  color:var(--ink);
+  background:var(--accent-soft);
+  border-radius:7px;
+  padding:.6rem .8rem;
+}
+.howto .example strong{color:var(--accent-strong);}
+.howto .takeaway{
+  margin:0;
+  font-size:.85rem;
+  color:var(--ink-faint);
+  border-top:1px dashed var(--border);
+  padding-top:.7rem;
+}
+
+.glossary{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:.85rem;
+  margin-bottom:1.25rem;
+}
+.glossary .g-item{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:.85rem 1rem;
+  font-size:.84rem;
+  color:var(--ink-soft);
+}
+.glossary .g-item strong{
+  display:block;
+  color:var(--accent-strong);
+  font-family:"Bahnschrift","DIN Alternate",system-ui,sans-serif;
+  font-size:.76rem;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  margin-bottom:.5rem;
+}
+.glossary .g-item ul{
+  margin:0;
+  padding-left:1.1rem;
+  display:flex;
+  flex-direction:column;
+  gap:.4rem;
+}
+.glossary .g-item li{font-size:.84rem;color:var(--ink-soft);}
+.glossary .g-item li b{color:var(--ink);font-weight:700;}
+
+details.reftables{
+  margin-top:.5rem;
+}
+details.reftables > summary{
+  cursor:pointer;
+  font-weight:700;
+  color:var(--accent-strong);
+  padding:.6rem 0;
+  font-size:.9rem;
+}
+details.reftables[open] > summary{margin-bottom:.5rem;}
+
+footer{
+  border-top:1px solid var(--border);
+  margin-top:2.5rem;
+  padding-top:1.25rem;
+  font-size:.8rem;
+  color:var(--ink-faint);
+  max-width:75ch;
+}
+footer strong{color:var(--ink-soft);}
+
+@media (prefers-reduced-motion: reduce){ *{transition:none !important;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <span class="eyebrow">Oko / GYOW · QA/QC</span>
+    <h1>ISO 2859&#8209;1 Sampling Tool</h1>
+    <p class="sub">Convert lot size into a sample character (Table 1), then get the Ac/Re plan for your target AQL across the three inspection types. Full reference tables below for manual cross-check.</p>
+  </header>
+
+  <div class="console">
+    <div class="panel">
+      <h2>Lot parameters</h2>
+      <div class="field">
+        <label for="lotSize">Lot size (N)</label>
+        <input type="number" id="lotSize" min="1" value="80" />
+      </div>
+      <div class="field">
+        <label for="level">Inspection level (Table 1)</label>
+        <select id="level">
+          <option value="II" selected>General II (default)</option>
+          <option value="I">General I</option>
+          <option value="III">General III</option>
+          <option value="S1">Special S-1</option>
+          <option value="S2">Special S-2</option>
+          <option value="S3">Special S-3</option>
+          <option value="S4">Special S-4</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Inspection type</label>
+        <div class="radio-row" id="regimeRow">
+          <label><input type="radio" name="regime" value="normal" checked>Normal</label>
+          <label><input type="radio" name="regime" value="tightened">Tightened</label>
+          <label><input type="radio" name="regime" value="reduced">Reduced</label>
+        </div>
+      </div>
+      <div class="field">
+        <label for="aql">AQL (%)</label>
+        <select id="aql"></select>
+      </div>
+      <div class="field">
+        <label for="letterOverride">Sample character (auto, override if needed)</label>
+        <select id="letterOverride"></select>
+      </div>
+    </div>
+
+    <div class="panel result">
+      <h2>Resulting plan</h2>
+      <div class="result-top">
+        <div class="readout-grid" style="flex:1">
+          <div class="stat accent"><div class="k">Sample character</div><div class="v" id="outLetter">-</div></div>
+          <div class="stat"><div class="k">Sample size (n)</div><div class="v" id="outN">-</div></div>
+          <div class="stat"><div class="k">Ac</div><div class="v" id="outAc">-</div></div>
+          <div class="stat"><div class="k">Re</div><div class="v" id="outRe">-</div></div>
+        </div>
+      </div>
+      <div class="verdict good" id="verdictBox">
+        <span class="chip" id="verdictChip">-</span>
+        <p id="verdictText">Fill in the parameters on the left.</p>
+      </div>
+      <p class="note" id="pathNote"></p>
+    </div>
+  </div>
+
+  <section class="ref">
+    <h2>Quick reference: key concepts</h2>
+    <p class="lede">Coaching cheat-sheet: quick topics to jog memory before an inspection, not a full restatement of the standard.</p>
+    <div class="glossary">
+      <div class="g-item"><strong>AQL: Acceptable Quality Limit</strong>
+        <ul>
+          <li>The quality level treated as <b>satisfactory as a long-run process average</b>, not a guarantee for any single lot.</li>
+          <li>Lower AQL = tighter requirement → smaller Ac for the same sample size.</li>
+          <li>Set per characteristic <b>before</b> inspection starts, major defects usually get a tighter AQL than minor/cosmetic ones.</li>
+          <li>Comes from the ITR / inspection plan, never picked on the fly by the inspector.</li>
+        </ul>
+      </div>
+      <div class="g-item"><strong>General Inspection Levels (I, II, III)</strong>
+        <ul>
+          <li>Control how much discriminating power the plan has, for the <b>same</b> lot size and AQL.</li>
+          <li><b>II is the default</b>, use it unless the plan says otherwise.</li>
+          <li><b>I</b> = smaller sample, less discrimination, lower-stakes, cost/time-sensitive checks.</li>
+          <li><b>III</b> = larger sample, more discrimination, higher-consequence characteristics.</li>
+        </ul>
+      </div>
+      <div class="g-item"><strong>Special Inspection Levels (S-1 to S-4)</strong>
+        <ul>
+          <li>Use only when sampling itself is <b>destructive, slow, or expensive</b>.</li>
+          <li>Trade discrimination for a much smaller sample, higher risk of the wrong call.</li>
+          <li><b>S-1</b> = smallest sample of the four; <b>S-4</b> = largest of the four (still smaller than General I in most lot ranges).</li>
+          <li>Only applies when the inspection plan explicitly calls for it.</li>
+        </ul>
+      </div>
+      <div class="g-item"><strong>Switching: Normal ⇄ Tightened ⇄ Reduced</strong>
+        <ul>
+          <li>Start every new supplier/characteristic on <b>Normal</b>.</li>
+          <li><b>Tightened</b> kicks in when recent lots show quality slipping, same sample size as Normal, stricter Ac/Re.</li>
+          <li><b>Reduced</b> only applies after sustained good quality, stable production, and sign-off from the responsible authority, smaller sample size.</li>
+          <li>A rejected lot under Reduced sends you straight back to Normal.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="ref">
+    <h2>Table 1: lot size → sample character</h2>
+    <p class="lede">Cross the lot size range with the inspection level. <strong>General II</strong> is the everyday default; special levels (S-1 to S-4) cut the sample size drastically and only apply when the inspection plan says so explicitly.</p>
+
+    <div class="howto">
+      <ol>
+        <li><strong>Find the row.</strong> Locate, in the "Lot or batch size" column, the range your lot size (N) falls into.</li>
+        <li><strong>Pick the column.</strong> Use <strong>General II</strong>, unless the inspection plan states otherwise.</li>
+        <li><strong>Read the letter.</strong> The row × column intersection is the <em>sample character</em>, a letter from A to S.</li>
+      </ol>
+      <p class="example"><strong>Example:</strong> a lot of 1,200 pieces, General II → falls in the "501 to 1,200" range → letter <strong>J</strong>.</p>
+      <p class="takeaway">The letter on its own says nothing about quality, it's just an intermediate code. It exists so it can be plugged into the Master Table below, which converts it into "how many pieces to sample" and "how many nonconformities accept/reject the lot." A letter further down the alphabet = bigger lot = bigger sample; never skip straight to an AQL without passing through this table first.</p>
+    </div>
+
+    <div class="table-scroll">
+      <table id="table1"></table>
+    </div>
+  </section>
+
+  <section class="ref">
+    <h2>Master Tables: Ac/Re by inspection type</h2>
+    <p class="lede">Ac = acceptance number (nonconformities up to this value → accept the lot). Re = rejection number. Arrows (↓ ↑) mean the real Ac/Re pair sits on a neighboring row, the tool above already resolves this; use the tables only for visual cross-check.</p>
+    <div class="legend">
+      <span><span class="swatch" style="background:var(--accent-soft);outline:1px solid var(--accent)"></span>Cell used in the current calculation</span>
+      <span><span class="ac" style="color:var(--good);font-weight:700">Ac</span> accepts</span>
+      <span><span class="re" style="color:var(--bad);font-weight:700">Re</span> rejects</span>
+      <span>↓ / ↑ use the row below / above</span>
+    </div>
+    <details class="reftables" open id="detNormal">
+      <summary>Normal inspection</summary>
+      <div class="table-scroll"><table class="mastertable" id="tableNormal"></table></div>
+    </details>
+    <details class="reftables" id="detTightened">
+      <summary>Tightened inspection</summary>
+      <div class="table-scroll"><table class="mastertable" id="tableTightened"></table></div>
+    </details>
+    <details class="reftables" id="detReduced">
+      <summary>Reduced inspection</summary>
+      <div class="table-scroll"><table class="mastertable" id="tableReduced"></table></div>
+    </details>
+  </section>
+
+  <footer>
+    <strong>About the data:</strong> Table 1 uses the standard values published in ISO 2859&#8209;1:1999 / ANSI-ASQ Z1.4. The Master Tables were reconstructed from the PDF <em>Single-sampling-plans-for-normal-inspection-ISO-2859-1-Master-Table.pdf</em> (Regulations and Standards), combining the letters/sample sizes extracted from that document with the standard AQL-column alignment, and checked against known reference points (e.g. letter H/AQL 1.0% → Ac 1/Re 2; letter K/AQL 1.5% → Ac 5/Re 6; letter N/AQL 1.0% → Ac 10/Re 11). For AQLs above roughly 25% (rarely used on site) and for the extreme letters A to C and R to S, always confirm against the original PDF before a lot-disposition decision. Note also: ANSI/ASQ Z1.4's Reduced-inspection plans historically keep a gap between Ac and Re (accept but revert to Normal in between); ISO 2859-1:1999 (the basis of this tool) removed that gap. Normal and Tightened match between the two standards.
+  </footer>
+
+</div>
+
+<script>
+(function(){
+
+const AQL_COLS = [0.010,0.015,0.025,0.040,0.065,0.10,0.15,0.25,0.40,0.65,1.0,1.5,2.5,4.0,6.5,10,15,25,40,65,100,150,250,400,650,1000];
+
+// ---- Table 1: lot size -> sample character, by inspection level ----
+const TABLE1 = [
+  {min:2,max:8,       L:{S1:'A',S2:'A',S3:'A',S4:'A',I:'A',II:'A',III:'B'}},
+  {min:9,max:15,      L:{S1:'A',S2:'A',S3:'A',S4:'A',I:'A',II:'B',III:'C'}},
+  {min:16,max:25,     L:{S1:'A',S2:'A',S3:'B',S4:'B',I:'B',II:'C',III:'D'}},
+  {min:26,max:50,     L:{S1:'A',S2:'B',S3:'B',S4:'C',I:'C',II:'D',III:'E'}},
+  {min:51,max:90,     L:{S1:'B',S2:'B',S3:'C',S4:'C',I:'C',II:'E',III:'F'}},
+  {min:91,max:150,    L:{S1:'B',S2:'B',S3:'C',S4:'D',I:'D',II:'F',III:'G'}},
+  {min:151,max:280,   L:{S1:'B',S2:'C',S3:'D',S4:'E',I:'E',II:'G',III:'H'}},
+  {min:281,max:500,   L:{S1:'B',S2:'C',S3:'D',S4:'E',I:'F',II:'H',III:'J'}},
+  {min:501,max:1200,  L:{S1:'C',S2:'C',S3:'E',S4:'F',I:'G',II:'J',III:'K'}},
+  {min:1201,max:3200, L:{S1:'C',S2:'D',S3:'E',S4:'G',I:'H',II:'K',III:'L'}},
+  {min:3201,max:10000,L:{S1:'C',S2:'D',S3:'F',S4:'G',I:'J',II:'L',III:'M'}},
+  {min:10001,max:35000,L:{S1:'C',S2:'D',S3:'F',S4:'H',I:'K',II:'M',III:'N'}},
+  {min:35001,max:150000,L:{S1:'D',S2:'E',S3:'G',S4:'J',I:'L',II:'N',III:'P'}},
+  {min:150001,max:500000,L:{S1:'D',S2:'E',S3:'G',S4:'J',I:'M',II:'P',III:'Q'}},
+  {min:500001,max:Infinity,L:{S1:'D',S2:'E',S3:'H',S4:'K',I:'N',II:'Q',III:'R'}},
+];
+const LEVELS = ['S1','S2','S3','S4','I','II','III'];
+const LEVEL_LABEL = {S1:'S-1',S2:'S-2',S3:'S-3',S4:'S-4',I:'General I',II:'General II',III:'General III'};
+
+// ---- Pair sequences per regime ----
+const SEQ = {
+  normal:    [[0,1],[1,2],[2,3],[3,4],[5,6],[7,8],[10,11],[14,15],[21,22],[30,31],[44,45]],
+  tightened: [[0,1],[1,2],[2,3],[3,4],[5,6],[8,9],[12,13],[18,19],[27,28],[41,42]],
+  reduced:   [[0,1],[1,2],[2,3],[3,4],[4,5],[6,7],[8,9],[10,11],[14,15],[21,22]],
+};
+
+// ---- Letters per regime: n = sample size, si = series index (drives AQL column alignment),
+// bandStart/bandCount = which pair-sequence indices are shown explicitly for that row ----
+function seriesIndexFromN(n){
+  const series=[2,3,5,8,13,20,32,50,80,125,200,315,500,800,1250,2000,3150];
+  return series.indexOf(n)+1;
+}
+const NORMAL_LETTERS = ['A','B','C','D','E','F','G','H','J','K','L','M','N','P','Q','R']
+  .map((letter,i)=>({letter, n:[2,3,5,8,13,20,32,50,80,125,200,315,500,800,1250,2000][i], si:i+1}));
+NORMAL_LETTERS.forEach(l=>{
+  l.bandStart = (l.letter==='R') ? 1 : 0;
+  l.bandCount = {A:10,B:11,C:11,D:11,E:11,F:9,G:9,H:9,J:9,K:9,L:9,M:9,N:9,P:9,Q:9,R:8}[l.letter];
+});
+
+const TIGHTENED_LETTERS = ['A','B','C','D','E','F','G','H','J','K','L','M','N','P','Q','R','S']
+  .map((letter,i)=>({letter, n:[2,3,5,8,13,20,32,50,80,125,200,315,500,800,1250,2000,3150][i], si:i+1}));
+TIGHTENED_LETTERS.forEach(l=>{
+  l.bandStart = (l.letter==='S') ? 1 : 0;
+  l.bandCount = {A:9,B:10,C:10,D:10,E:10,F:8,G:8,H:8,J:8,K:8,L:8,M:8,N:8,P:8,Q:8,R:8,S:1}[l.letter];
+});
+
+const REDUCED_LETTERS = ['A','B','C','D','E','F','G','H','J','K','L','M','N','P','Q','R']
+  .map((letter,i)=>({letter, n:[2,2,2,3,5,8,13,20,32,50,80,125,200,315,500,800][i]}));
+REDUCED_LETTERS.forEach(l=>{ l.si = seriesIndexFromN(l.n); });
+REDUCED_LETTERS.forEach(l=>{
+  l.bandStart = (l.letter==='R') ? 1 : 0;
+  l.bandCount = {A:10,B:10,C:10,D:10,E:10,F:8,G:8,H:8,J:8,K:8,L:8,M:8,N:8,P:8,Q:8,R:7}[l.letter];
+});
+
+const REGIMES = {
+  normal:    {letters:NORMAL_LETTERS,    seq:SEQ.normal,    maxSi:16},
+  tightened: {letters:TIGHTENED_LETTERS, seq:SEQ.tightened, maxSi:17},
+  reduced:   {letters:REDUCED_LETTERS,   seq:SEQ.reduced,   maxSi:14},
+};
+
+// startIdx0(si) = column index (0-based, into AQL_COLS) where this row's band begins
+function startIdx0(si){ return 17-si; }
+
+// Resolve Ac/Re for a given regime + requested letter + AQL column index.
+// Walks to a neighboring row exactly like the printed arrows would, and reports which letter/n was actually used.
+function resolvePlan(regimeKey, letterEntry, colIdx){
+  const reg = REGIMES[regimeKey];
+  const bySi = si => reg.letters.find(l=>l.si===si);
+  let si = letterEntry.si;
+  let guard=0;
+  while(guard++<40){
+    const row = bySi(si);
+    if(!row) return null; // walked off the table entirely
+    const idealIdx = colIdx + si - 17;
+    if(idealIdx < row.bandStart){ // AQL too tight for this row -> walk down (bigger letter)
+      const targetSi = 17-colIdx; // where idealIdx would land exactly at bandStart 0
+      if(targetSi > reg.maxSi) return {none:true, reason:'tight'};
+      si = Math.max(si+1, targetSi);
+      continue;
+    }
+    if(idealIdx >= row.bandStart+row.bandCount){ // AQL too loose for this row -> walk up (smaller letter)
+      if(si<=1) return {none:true, reason:'loose'};
+      si = si-1;
+      continue;
+    }
+    const pair = reg.seq[idealIdx];
+    return {letter:row.letter, n:row.n, ac:pair[0], re:pair[1], si:row.si};
+  }
+  return {none:true, reason:'unresolved'};
+}
+
+// ---------------- UI wiring ----------------
+const aqlSel = document.getElementById('aql');
+AQL_COLS.forEach((v,i)=>{
+  const opt = document.createElement('option');
+  opt.value = i;
+  opt.textContent = v.toString() + ' %';
+  if(v===4) opt.selected = true;
+  aqlSel.appendChild(opt);
+});
+
+const letterSel = document.getElementById('letterOverride');
+function rebuildLetterOptions(regimeKey, autoLetter){
+  letterSel.innerHTML = '';
+  const autoOpt = document.createElement('option');
+  autoOpt.value = '__auto__';
+  autoOpt.textContent = 'Auto (Table 1): ' + autoLetter;
+  letterSel.appendChild(autoOpt);
+  REGIMES[regimeKey].letters.forEach(l=>{
+    const opt = document.createElement('option');
+    opt.value = l.letter;
+    opt.textContent = l.letter + ' (n=' + l.n + ')';
+    letterSel.appendChild(opt);
+  });
+  letterSel.value = '__auto__';
+}
+
+function letterFromTable1(lotSize, level){
+  const band = TABLE1.find(b=>lotSize>=b.min && lotSize<=b.max) || TABLE1[TABLE1.length-1];
+  return band.L[level];
+}
+
+function currentRegime(){
+  return document.querySelector('input[name="regime"]:checked').value;
+}
+
+function render(){
+  const lotSize = Math.max(1, parseInt(document.getElementById('lotSize').value,10) || 1);
+  const level = document.getElementById('level').value;
+  const regimeKey = currentRegime();
+  const autoLetter = letterFromTable1(lotSize, level);
+
+  if(letterSel.dataset.regime !== regimeKey){
+    rebuildLetterOptions(regimeKey, autoLetter);
+    letterSel.dataset.regime = regimeKey;
+  } else {
+    letterSel.querySelector('option[value="__auto__"]').textContent = 'Auto (Table 1): ' + autoLetter;
+  }
+
+  const useLetter = (letterSel.value === '__auto__') ? autoLetter : letterSel.value;
+  const reg = REGIMES[regimeKey];
+  let entry = reg.letters.find(l=>l.letter===useLetter);
+  if(!entry) entry = reg.letters[0];
+
+  const colIdx = parseInt(aqlSel.value,10);
+  const plan = resolvePlan(regimeKey, entry, colIdx);
+
+  const outLetter = document.getElementById('outLetter');
+  const outN = document.getElementById('outN');
+  const outAc = document.getElementById('outAc');
+  const outRe = document.getElementById('outRe');
+  const verdictBox = document.getElementById('verdictBox');
+  const verdictChip = document.getElementById('verdictChip');
+  const verdictText = document.getElementById('verdictText');
+  const pathNote = document.getElementById('pathNote');
+
+  if(!plan || plan.none){
+    outLetter.textContent = useLetter;
+    outN.textContent = entry.n;
+    outAc.textContent = '-';
+    outRe.textContent = '-';
+    verdictBox.className = 'verdict bad-none';
+    verdictChip.textContent = 'No tabulated plan';
+    verdictText.innerHTML = plan && plan.reason==='tight'
+      ? 'This AQL is too tight for any sample size in this inspection type, inspect 100% of the lot or revise the target AQL.'
+      : 'Combination out of range for this table, consult the original standard or adjust the AQL.';
+    pathNote.textContent = '';
+    document.getElementById('lotSize').setAttribute('aria-invalid','true');
+    highlightTables(regimeKey, null, colIdx);
+    return;
+  }
+
+  outLetter.textContent = plan.letter;
+  outN.textContent = plan.n;
+  outAc.textContent = plan.ac;
+  outRe.textContent = plan.re;
+
+  verdictBox.className = 'verdict good';
+  verdictChip.textContent = 'Plan set';
+  verdictText.innerHTML = 'Sample <strong>' + plan.n + '</strong> unit(s). Accept the lot with up to <strong>' + plan.ac + '</strong> nonconformitie(s); reject with <strong>' + plan.re + '</strong> or more.'
+    + (plan.n > lotSize ? ' Sample size exceeds the lot, inspect the entire lot (100%).' : '');
+
+  if(plan.letter !== useLetter){
+    pathNote.textContent = 'Letter ' + useLetter + ' has no plan of its own at this AQL, the table arrow points to letter ' + plan.letter + ', used above.';
+  } else {
+    pathNote.textContent = '';
+  }
+
+  highlightTables(regimeKey, plan.letter, colIdx);
+}
+
+// ---------------- Static table renderers (for visual cross-check) ----------------
+function renderTable1(){
+  const t = document.getElementById('table1');
+  let html = '<thead><tr><th class="rowhead">Lot size</th>';
+  LEVELS.forEach(lv=>html += '<th data-lv="'+lv+'">'+LEVEL_LABEL[lv]+'</th>');
+  html += '</tr></thead><tbody>';
+  TABLE1.forEach(b=>{
+    const label = b.max===Infinity ? (b.min.toLocaleString('en-US')+' and over') : (b.min+' to '+b.max);
+    html += '<tr data-min="'+b.min+'" data-max="'+(b.max===Infinity?'inf':b.max)+'"><td class="rowhead">'+label+'</td>';
+    LEVELS.forEach(lv=> html += '<td data-lv="'+lv+'">'+b.L[lv]+'</td>');
+    html += '</tr>';
+  });
+  html += '</tbody>';
+  t.innerHTML = html;
+}
+
+function renderMasterTable(tableId, letters, seq, maxSi){
+  const t = document.getElementById(tableId);
+  let html = '<thead><tr><th class="rowhead">Letter</th><th>n</th>';
+  AQL_COLS.forEach((v,i)=> html += '<th data-col="'+i+'">'+v.toString()+'</th>');
+  html += '</tr></thead><tbody>';
+  letters.forEach(row=>{
+    html += '<tr data-letter="'+row.letter+'"><td class="rowhead">'+row.letter+'</td><td>'+row.n+'</td>';
+    AQL_COLS.forEach((v,colIdx)=>{
+      const idealIdx = colIdx + row.si - 17;
+      let cell;
+      if(idealIdx>=row.bandStart && idealIdx<row.bandStart+row.bandCount){
+        const pair = seq[idealIdx];
+        cell = '<td class="pair" data-col="'+colIdx+'"><span class="ac">'+pair[0]+'</span> <span class="re">'+pair[1]+'</span></td>';
+      } else if(idealIdx < row.bandStart){
+        cell = '<td class="arrow" data-col="'+colIdx+'">&#8681;</td>';
+      } else {
+        cell = '<td class="arrow" data-col="'+colIdx+'">&#8679;</td>';
+      }
+      html += cell;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody>';
+  t.innerHTML = html;
+}
+
+function highlightTables(regimeKey, letter, colIdx){
+  document.querySelectorAll('#table1 td, #table1 th').forEach(el=>el.classList.remove('hit','col-hit-header'));
+  const level = document.getElementById('level').value;
+  document.querySelectorAll('#table1 tbody tr').forEach(tr=>{
+    const min = parseInt(tr.dataset.min,10);
+    const max = tr.dataset.max==='inf' ? Infinity : parseInt(tr.dataset.max,10);
+    const lotSize = Math.max(1, parseInt(document.getElementById('lotSize').value,10) || 1);
+    if(lotSize>=min && lotSize<=max){
+      tr.querySelector('td[data-lv="'+level+'"]').classList.add('hit');
+      tr.querySelector('td.rowhead').classList.add('hit');
+    }
+  });
+  document.querySelectorAll('#table1 th[data-lv]').forEach(th=>{
+    if(th.dataset.lv===level) th.classList.add('col-hit-header');
+  });
+
+  ['tableNormal','tableTightened','tableReduced'].forEach(id=>{
+    document.querySelectorAll('#'+id+' td, #'+id+' th').forEach(el=>el.classList.remove('hit','col-hit-header'));
+  });
+  const tableIdMap = {normal:'tableNormal',tightened:'tableTightened',reduced:'tableReduced'};
+  const activeId = tableIdMap[regimeKey];
+  document.querySelectorAll('#'+activeId+' th[data-col]').forEach(th=>{
+    if(parseInt(th.dataset.col,10)===colIdx) th.classList.add('col-hit-header');
+  });
+  if(letter){
+    const row = document.querySelector('#'+activeId+' tr[data-letter="'+letter+'"]');
+    if(row){
+      row.querySelector('td.rowhead').classList.add('hit');
+      const cell = row.querySelector('td[data-col="'+colIdx+'"]');
+      if(cell) cell.classList.add('hit');
+    }
+  }
+  ['detNormal','detTightened','detReduced'].forEach(id=>document.getElementById(id).open=false);
+  document.getElementById('det'+regimeKey.charAt(0).toUpperCase()+regimeKey.slice(1)).open = true;
+}
+
+// init
+renderTable1();
+renderMasterTable('tableNormal', NORMAL_LETTERS, SEQ.normal, 16);
+renderMasterTable('tableTightened', TIGHTENED_LETTERS, SEQ.tightened, 17);
+renderMasterTable('tableReduced', REDUCED_LETTERS, SEQ.reduced, 14);
+
+['lotSize','level','aql','letterOverride'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', render);
+  document.getElementById(id).addEventListener('change', render);
+});
+document.querySelectorAll('input[name="regime"]').forEach(r=>r.addEventListener('change', render));
+
+render();
+})();
+</script>
+</body>
+</html>
