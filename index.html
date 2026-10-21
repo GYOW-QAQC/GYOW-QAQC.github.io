@@ -11,125 +11,229 @@
 <link rel="apple-touch-icon" href="/icons/maskable-192.png">
 <style>
   :root {
-    --green-900: #0b3b22; --green-700: #015f2d; --green-500: #13844a;
-    --yellow: #fcd116; --red: #d40a16; --ink: #13201a;
-    --bg: #f3f5f2; --card: #ffffff; --line: #dfe5df; --muted: #5d6b63;
-    --chip-ready: #e2f3e8; --chip-ready-ink: #0d6b37; --chip-soon: #eef0ee; --chip-soon-ink: #5d6b63;
-    --shadow: 0 1px 2px rgba(16, 40, 26, .06), 0 6px 18px rgba(16, 40, 26, .06);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #0d1511; --card: #15211a; --line: #24342b; --ink: #e8efe9; --muted: #9db0a4;
-      --chip-ready: #12371f; --chip-ready-ink: #8fe0ad; --chip-soon: #1d2a23; --chip-soon-ink: #9db0a4;
-      --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 22px rgba(0, 0, 0, .25);
-    }
+    --green-900: #0b3b22; --green-700: #015f2d; --green-600: #0c7a3e; --green-100: #e3f1e8; --green-50: #f1f8f3;
+    --yellow: #fcd116; --yellow-100: #fff6cc; --red: #d40a16;
+    --ink: #15241b; --muted: #617068; --line: #e1e8e3; --bg: #f5f8f6; --card: #ffffff;
+    --shadow: 0 1px 2px rgba(16, 40, 26, .05), 0 8px 24px rgba(16, 40, 26, .06);
+    --side: 248px;
   }
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
-  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 "Segoe UI", Roboto, system-ui, -apple-system, Arial, sans-serif; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 "Segoe UI", Roboto, system-ui, -apple-system, Arial, sans-serif; }
+  button, input { font: inherit; color: inherit; }
+  a { color: inherit; }
 
-  /* hero: flag colours as a thin arrowhead on the left */
-  .hero { position: relative; overflow: hidden; color: #fff;
-    background: radial-gradient(1200px 400px at 85% -10%, rgba(19, 132, 74, .55), transparent 60%),
-                linear-gradient(160deg, var(--green-900), var(--green-700)); }
-  .hero::before, .hero::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; }
-  .hero::before { width: 64px; background: var(--yellow); clip-path: polygon(0 0, 100% 50%, 0 100%); opacity: .95; }
-  .hero::after { width: 34px; background: var(--red); clip-path: polygon(0 0, 100% 50%, 0 100%); border-right: 0; }
-  .hero-in { position: relative; max-width: 1040px; margin: 0 auto; padding: 28px 20px 30px 84px; display: flex; align-items: center; gap: 22px; }
-  .logo { width: 128px; height: 128px; flex: none; filter: drop-shadow(0 6px 14px rgba(0, 0, 0, .35)); }
-  .hero h1 { margin: 0; font-size: clamp(28px, 5vw, 40px); line-height: 1.1; letter-spacing: -.01em; }
-  .hero p { margin: 6px 0 0; color: rgba(255, 255, 255, .85); }
-  .motto { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
-  .motto span { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
-    padding: 4px 10px; border-radius: 999px; background: rgba(255, 255, 255, .12); border: 1px solid rgba(255, 255, 255, .18); }
+  /* ---------- sidebar ---------- */
+  .side { position: fixed; inset: 0 auto 0 0; width: var(--side); background: var(--card); border-right: 1px solid var(--line);
+    display: flex; flex-direction: column; padding: 18px 14px; z-index: 30; transition: transform .2s ease; }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 2px 6px 18px; text-decoration: none; }
+  .brand img { width: 44px; height: 44px; }
+  .brand b { display: block; font-size: 17px; line-height: 1.1; color: var(--green-900); }
+  .brand small { display: block; font-size: 12px; color: var(--muted); }
+  .side h4 { margin: 14px 8px 6px; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+  .nav { display: flex; flex-direction: column; gap: 2px; }
+  .nav button, .nav a { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 12px; border: 0; border-radius: 10px;
+    background: none; cursor: pointer; text-align: left; text-decoration: none; font-weight: 600; color: #34453b; }
+  .nav button:hover, .nav a:hover { background: var(--green-50); }
+  .nav button.on { background: var(--green-700); color: #fff; }
+  .nav svg { width: 18px; height: 18px; flex: none; }
+  .nav .count { margin-left: auto; font-size: 12px; font-weight: 700; opacity: .7; }
+  .side .spacer { flex: 1; }
+  .who { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; background: var(--green-50); border: 1px solid var(--line); }
+  .avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--green-700); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 13px; flex: none; }
+  .who b { display: block; font-size: 13px; line-height: 1.2; }
+  .who small { color: var(--muted); font-size: 12px; }
 
-  main { max-width: 1040px; margin: 0 auto; padding: 22px 20px 8px; }
-  h2 { margin: 18px 0 12px; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+  /* ---------- main ---------- */
+  .main { margin-left: var(--side); min-height: 100vh; }
+  .topbar { display: none; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 24px 28px 40px; }
 
-  .card { position: relative; display: flex; gap: 14px; align-items: flex-start; padding: 16px;
-    background: var(--card); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow);
-    color: inherit; text-decoration: none; transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
-  a.card:hover { transform: translateY(-2px); border-color: var(--green-500); }
-  a.card:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; }
-  .card.soon { opacity: .78; box-shadow: none; }
-  .ico { width: 46px; height: 46px; flex: none; border-radius: 12px; display: grid; place-items: center; color: #fff; }
-  .ico svg { width: 24px; height: 24px; }
-  .ico.g { background: linear-gradient(140deg, var(--green-500), var(--green-700)); }
-  .ico.y { background: linear-gradient(140deg, #f7c600, #e3a500); color: #1b1b1b; }
-  .ico.r { background: linear-gradient(140deg, #e8333d, var(--red)); }
-  .ico.k { background: linear-gradient(140deg, #3a463f, #1b241f); }
-  .card h3 { margin: 0; font-size: 17px; line-height: 1.25; }
-  .card p { margin: 4px 0 0; font-size: 14px; color: var(--muted); }
-  .chip { display: inline-block; margin-top: 10px; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
-    padding: 3px 9px; border-radius: 999px; background: var(--chip-ready); color: var(--chip-ready-ink); }
-  .soon .chip { background: var(--chip-soon); color: var(--chip-soon-ink); }
-  .go { position: absolute; right: 14px; top: 16px; color: var(--muted); }
-  .go svg { width: 18px; height: 18px; }
+  .welcome { position: relative; overflow: hidden; display: flex; align-items: center; gap: 18px; padding: 20px 22px 20px 54px;
+    border-radius: 18px; color: #fff; box-shadow: var(--shadow);
+    background: radial-gradient(700px 240px at 90% -20%, rgba(19, 132, 74, .6), transparent 60%), linear-gradient(150deg, var(--green-900), var(--green-700)); }
+  .welcome::before, .welcome::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; clip-path: polygon(0 0, 100% 50%, 0 100%); }
+  .welcome::before { width: 38px; background: var(--yellow); }
+  .welcome::after { width: 20px; background: var(--red); }
+  .welcome img { width: 86px; height: 86px; flex: none; filter: drop-shadow(0 6px 12px rgba(0, 0, 0, .3)); }
+  .welcome h1 { margin: 0; font-size: clamp(22px, 3.2vw, 30px); line-height: 1.15; }
+  .welcome p { margin: 4px 0 0; color: rgba(255, 255, 255, .85); }
 
-  footer { max-width: 1040px; margin: 0 auto; padding: 18px 20px 32px; font-size: 13px; color: var(--muted); }
+  .tools-head { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 24px 0 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips button { border: 1px solid var(--line); background: var(--card); padding: 6px 14px; border-radius: 999px; cursor: pointer; font-weight: 600; font-size: 14px; }
+  .chips button:hover { border-color: var(--green-600); }
+  .chips button.on { background: var(--yellow); border-color: var(--yellow); color: #1b1b1b; }
+  .search { margin-left: auto; position: relative; flex: 0 1 300px; }
+  .search input { width: 100%; padding: 9px 12px 9px 36px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); outline: none; }
+  .search input:focus { border-color: var(--green-600); box-shadow: 0 0 0 3px var(--green-100); }
+  .search svg { position: absolute; left: 11px; top: 50%; width: 17px; height: 17px; transform: translateY(-50%); color: var(--muted); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+  .card { display: flex; flex-direction: column; padding: 16px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); }
+  .card .top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .ico { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; }
+  .ico svg { width: 22px; height: 22px; }
+  .ico.g { background: var(--green-100); color: var(--green-700); }
+  .ico.y { background: var(--yellow-100); color: #8a6a00; }
+  .ico.r { background: #fde4e5; color: var(--red); }
+  .ico.k { background: #e9eeeb; color: #2e3a33; }
+  .tag { font-size: 10.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+    background: #eef2ef; border-radius: 999px; padding: 3px 8px; white-space: nowrap; }
+  .card h3 { margin: 12px 0 4px; font-size: 16.5px; line-height: 1.25; }
+  .card p { margin: 0; font-size: 14px; color: var(--muted); flex: 1; }
+  .card .act { margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 12px; border-radius: 10px;
+    font-weight: 700; font-size: 14px; text-decoration: none; background: var(--green-700); color: #fff; transition: background .15s ease; }
+  .card a.act:hover { background: var(--green-600); }
+  .card a.act:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; }
+  .card .act svg { width: 16px; height: 16px; }
+  .card.soon .act { background: #eef2ef; color: var(--muted); cursor: default; }
+  .empty { padding: 28px; text-align: center; color: var(--muted); border: 1px dashed var(--line); border-radius: 16px; }
+
+  footer { margin-top: 28px; font-size: 13px; color: var(--muted); }
   footer p { margin: 4px 0; }
 
-  @media (max-width: 560px) {
-    .hero-in { flex-direction: column; text-align: center; padding: 22px 16px 24px 16px; }
-    .hero::before { width: 30px; } .hero::after { width: 16px; }
-    .logo { width: 112px; height: 112px; }
-    .motto { justify-content: center; }
-    main, footer { padding-left: 16px; padding-right: 16px; }
+  .scrim { display: none; }
+
+  /* ---------- tablet and phone ---------- */
+  @media (max-width: 900px) {
+    .side { transform: translateX(-100%); box-shadow: 0 0 40px rgba(0, 0, 0, .15); }
+    body.menu .side { transform: none; }
+    body.menu .scrim { display: block; position: fixed; inset: 0; background: rgba(10, 30, 18, .35); z-index: 20; }
+    .main { margin-left: 0; }
+    .topbar { display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 10; padding: 10px 16px;
+      background: rgba(255, 255, 255, .92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+    .topbar img { width: 32px; height: 32px; }
+    .topbar b { font-size: 16px; color: var(--green-900); }
+    .topbar button { margin-left: auto; border: 1px solid var(--line); background: var(--card); border-radius: 10px; padding: 7px 9px; cursor: pointer; }
+    .topbar svg { width: 20px; height: 20px; display: block; }
+    .wrap { padding: 16px 16px 32px; }
+    .welcome { padding: 16px 16px 16px 40px; }
+    .welcome::before { width: 26px; } .welcome::after { width: 14px; }
+    .welcome img { width: 64px; height: 64px; }
+    .search { flex-basis: 100%; margin-left: 0; order: -1; }
   }
 </style>
 </head>
 <body>
-<header class="hero">
-  <div class="hero-in">
-    <img class="logo" src="img/logo-320.webp" alt="QA/QC Oko Gold logo" width="128" height="128">
-    <div>
-      <h1>QAQC Hub</h1>
-      <p>Oko Gold, GYOW QA/QC tools for the office, the tablet and the phone</p>
-      <div class="motto"><span>Verify</span><span>Inspect</span><span>Record</span><span>Improve</span></div>
-    </div>
-  </div>
-</header>
+<aside class="side" id="side">
+  <a class="brand" href="/">
+    <img src="img/logo-320.webp" alt="QA/QC Oko Gold logo" width="44" height="44">
+    <span><b>QAQC Hub</b><small>Oko Gold, GYOW</small></span>
+  </a>
+  <h4>Menu</h4>
+  <nav class="nav" id="nav"></nav>
+  <h4>Links</h4>
+  <nav class="nav">
+    <a href="https://gminingventures.sharepoint.com/sites/OKO-QAQC" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      OKO-QAQC SharePoint</a>
+  </nav>
+  <div class="spacer"></div>
+  <div class="who" id="who"></div>
+</aside>
+<div class="scrim" id="scrim"></div>
 
-<main>
-  <h2>Tools</h2>
-  <div class="grid">
-    <a class="card" href="field-reports/">
-      <div class="ico g"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9z"/><path d="m9 13 2 2 4-4"/></svg></div>
-      <div><h3>Field Reports</h3><p>Inspection reports from pre-report to issue: office, field tablet, close-out.</p><span class="chip">Ready</span></div>
-      <span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></span>
-    </a>
-    <a class="card" href="iso-2859/">
-      <div class="ico y"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 4v16"/></svg></div>
-      <div><h3>ISO 2859 Sampling</h3><p>AQL sampling plan: sample size, Ac and Re by lot size, inspection level and regime.</p><span class="chip">Ready</span></div>
-      <span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></span>
-    </a>
+<div class="main">
+  <div class="topbar">
+    <img src="img/logo-320.webp" alt="" width="32" height="32"><b>QAQC Hub</b>
+    <button id="menuBtn" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
   </div>
+  <div class="wrap">
+    <section class="welcome">
+      <img src="img/logo-320.webp" alt="" width="86" height="86">
+      <div><h1 id="hello">Welcome</h1><p>Which tool do you need today?</p></div>
+    </section>
 
-  <h2>Coming soon</h2>
-  <div class="grid">
-    <div class="card soon">
-      <div class="ico r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></div>
-      <div><h3>Walkdown Email Builder</h3><p>Walkdown emails and invites per WBS, read live from the Handover Master Control.</p><span class="chip">In progress</span></div>
+    <div class="tools-head">
+      <div class="chips" id="chips"></div>
+      <label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Search tools" aria-label="Search tools"></label>
     </div>
-    <div class="card soon">
-      <div class="ico k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg></div>
-      <div><h3>HEIC Converter</h3><p>iPhone HEIC photos to JPG, on any device.</p><span class="chip">Planned</span></div>
-    </div>
-    <div class="card soon">
-      <div class="ico g"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12 12 20l-8-8V4h8z"/><circle cx="8" cy="8" r="1.5"/></svg></div>
-      <div><h3>Deficiency Photo Names</h3><p>Rename deficiency photos to DEF_WBS_ITEM_BEFORE / AFTER.</p><span class="chip">Planned</span></div>
-    </div>
-    <div class="card soon">
-      <div class="ico y"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div>
-      <div><h3>Dashboards</h3><p>ITR, deficiencies, construction completion, handover. GMIN login required.</p><span class="chip">Planned</span></div>
-    </div>
+    <div class="grid" id="grid"></div>
+
+    <footer>
+      <p>The tools run in your browser. Report data stays in the OKO-QAQC SharePoint library and on your device.</p>
+      <p>On the tablet or phone: open this page in Edge, then menu &gt; Add to phone, to get the QAQC Hub icon.</p>
+    </footer>
   </div>
-</main>
+</div>
 
-<footer>
-  <p>The tools run in your browser. Report data stays in the OKO-QAQC SharePoint library and on your device.</p>
-  <p>On the tablet or phone: open this page in Edge, then menu &gt; Add to phone, to get the QAQC Hub icon.</p>
-</footer>
+<script>
+(function () {
+  'use strict';
+  const I = {
+    report: '<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9z"/><path d="m9 13 2 2 4-4"/>',
+    table: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 4v16"/>',
+    mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+    image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/>',
+    tag: '<path d="M20 12 12 20l-8-8V4h8z"/><circle cx="8" cy="8" r="1.5"/>',
+    chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+    home: '<path d="m3 11 9-7 9 7"/><path d="M5 10v10h14V10"/>',
+    field: '<path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>',
+    office: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
+    book: '<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5"/>',
+    arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>'
+  };
+  const svg = (k) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${I[k]}</svg>`;
+
+  // the hub's catalogue: add a tool here when it goes live
+  const TOOLS = [
+    { name: 'Field Reports', href: 'field-reports/', icon: 'report', color: 'g', tag: 'Field + Office', groups: ['field', 'office'], ready: true,
+      text: 'Inspection reports from pre-report to issue: office, field tablet, close-out.' },
+    { name: 'ISO 2859 Sampling', href: 'iso-2859/', icon: 'table', color: 'y', tag: 'Reference', groups: ['reference', 'field'], ready: true,
+      text: 'AQL sampling plan: sample size, Ac and Re by lot size, inspection level and regime.' },
+    { name: 'Walkdown Email Builder', icon: 'mail', color: 'r', tag: 'Office', groups: ['office'], status: 'In progress',
+      text: 'Walkdown emails and invites per WBS, read live from the Handover Master Control.' },
+    { name: 'HEIC Converter', icon: 'image', color: 'k', tag: 'Field', groups: ['field'], status: 'Planned',
+      text: 'iPhone HEIC photos to JPG, on any device.' },
+    { name: 'Deficiency Photo Names', icon: 'tag', color: 'g', tag: 'Office', groups: ['office'], status: 'Planned',
+      text: 'Rename deficiency photos to DEF_WBS_ITEM_BEFORE / AFTER.' },
+    { name: 'Dashboards', icon: 'chart', color: 'y', tag: 'Dashboards', groups: ['dashboards'], status: 'Planned',
+      text: 'ITR, deficiencies, construction completion, handover. GMIN login required.' }
+  ];
+  const GROUPS = [
+    { id: 'all', label: 'All tools', icon: 'home' }, { id: 'field', label: 'Field', icon: 'field' },
+    { id: 'office', label: 'Office', icon: 'office' }, { id: 'reference', label: 'Reference', icon: 'book' },
+    { id: 'dashboards', label: 'Dashboards', icon: 'chart' }
+  ];
+  const FILTERS = [{ id: 'all', label: 'All' }, { id: 'ready', label: 'Ready' }, { id: 'soon', label: 'Coming soon' }];
+
+  const st = { group: 'all', filter: 'all', q: '' };
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const inGroup = (t, g) => g === 'all' || t.groups.includes(g);
+
+  function render() {
+    document.getElementById('nav').innerHTML = GROUPS.map(g => `<button data-group="${g.id}" class="${st.group === g.id ? 'on' : ''}">${svg(g.icon)}${esc(g.label)}<span class="count">${TOOLS.filter(t => inGroup(t, g.id)).length}</span></button>`).join('');
+    document.getElementById('chips').innerHTML = FILTERS.map(f => `<button data-filter="${f.id}" class="${st.filter === f.id ? 'on' : ''}">${esc(f.label)}</button>`).join('');
+    const q = st.q.trim().toLowerCase();
+    const list = TOOLS.filter(t => inGroup(t, st.group) && (st.filter === 'all' || (st.filter === 'ready') === !!t.ready) &&
+      (!q || `${t.name} ${t.text} ${t.tag}`.toLowerCase().includes(q)));
+    document.getElementById('grid').innerHTML = list.length ? list.map(t => `
+      <article class="card ${t.ready ? '' : 'soon'}">
+        <div class="top"><div class="ico ${t.color}">${svg(t.icon)}</div><span class="tag">${esc(t.tag)}</span></div>
+        <h3>${esc(t.name)}</h3><p>${esc(t.text)}</p>
+        ${t.ready ? `<a class="act" href="${t.href}">Open ${svg('arrow')}</a>` : `<span class="act">${esc(t.status)}</span>`}
+      </article>`).join('') : '<div class="empty">No tool matches.</div>';
+  }
+
+  // greeting with the name picked in the tools (same browser storage)
+  let name = ''; try { name = localStorage.getItem('fr_user') || ''; } catch (e) { name = ''; }
+  const h = new Date().getHours(), part = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('hello').textContent = name ? `${part}, ${name.split(' ')[0]}` : part;
+  const initials = name ? name.split(/\s+/).filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase() : 'QA';
+  document.getElementById('who').innerHTML = `<div class="avatar">${esc(initials)}</div><div><b>${esc(name || 'Not signed in')}</b><small>${name ? 'QA/QC team' : 'Pick your name in a tool'}</small></div>`;
+
+  document.addEventListener('click', (e) => {
+    const g = e.target.closest('[data-group]'), f = e.target.closest('[data-filter]');
+    if (g) { st.group = g.dataset.group; document.body.classList.remove('menu'); render(); }
+    if (f) { st.filter = f.dataset.filter; render(); }
+  });
+  document.getElementById('q').addEventListener('input', (e) => { st.q = e.target.value; render(); });
+  document.getElementById('menuBtn').addEventListener('click', () => document.body.classList.toggle('menu'));
+  document.getElementById('scrim').addEventListener('click', () => document.body.classList.remove('menu'));
+  render();
+})();
+</script>
 </body>
 </html>
