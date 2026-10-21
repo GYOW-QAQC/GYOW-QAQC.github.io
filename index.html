@@ -4,42 +4,132 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>QAQC Hub</title>
+<meta name="description" content="Oko Gold GYOW QA/QC tools">
 <link rel="manifest" href="/manifest.webmanifest">
-<meta name="theme-color" content="#003f53">
+<meta name="theme-color" content="#0b3b22">
 <link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/maskable-192.png">
 <style>
-  :root { --navy: #003f53; --teal: #00556f; --gold: #c3932c; --bg: #f2f4f6; --card: #ffffff; --border: #d5dade; --text: #1f2733; --muted: #66707a; }
+  :root {
+    --green-900: #0b3b22; --green-700: #015f2d; --green-500: #13844a;
+    --yellow: #fcd116; --red: #d40a16; --ink: #13201a;
+    --bg: #f3f5f2; --card: #ffffff; --line: #dfe5df; --muted: #5d6b63;
+    --chip-ready: #e2f3e8; --chip-ready-ink: #0d6b37; --chip-soon: #eef0ee; --chip-soon-ink: #5d6b63;
+    --shadow: 0 1px 2px rgba(16, 40, 26, .06), 0 6px 18px rgba(16, 40, 26, .06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1511; --card: #15211a; --line: #24342b; --ink: #e8efe9; --muted: #9db0a4;
+      --chip-ready: #12371f; --chip-ready-ink: #8fe0ad; --chip-soon: #1d2a23; --chip-soon-ink: #9db0a4;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 22px rgba(0, 0, 0, .25);
+    }
+  }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.45 "Segoe UI", Roboto, Arial, sans-serif; }
-  header { background: var(--navy); color: #fff; padding: 14px 16px; }
-  header h1 { margin: 0; font-size: 20px; letter-spacing: .02em; }
-  header p { margin: 2px 0 0; font-size: 13px; opacity: .85; }
-  main { max-width: 900px; margin: 0 auto; padding: 16px; }
-  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
-  a.tile { display: block; background: var(--card); border: 1px solid var(--border); border-top: 4px solid var(--gold); border-radius: 10px; padding: 16px; color: inherit; text-decoration: none; }
-  a.tile:hover { box-shadow: 0 3px 10px rgba(0,0,0,.08); }
-  a.tile h2 { margin: 0 0 6px; font-size: 17px; color: var(--teal); }
-  a.tile p { margin: 0; font-size: 14px; color: var(--muted); }
-  footer { max-width: 900px; margin: 0 auto; padding: 8px 16px 24px; font-size: 12px; color: var(--muted); }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 "Segoe UI", Roboto, system-ui, -apple-system, Arial, sans-serif; }
+
+  /* hero: flag colours as a thin arrowhead on the left */
+  .hero { position: relative; overflow: hidden; color: #fff;
+    background: radial-gradient(1200px 400px at 85% -10%, rgba(19, 132, 74, .55), transparent 60%),
+                linear-gradient(160deg, var(--green-900), var(--green-700)); }
+  .hero::before, .hero::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; }
+  .hero::before { width: 64px; background: var(--yellow); clip-path: polygon(0 0, 100% 50%, 0 100%); opacity: .95; }
+  .hero::after { width: 34px; background: var(--red); clip-path: polygon(0 0, 100% 50%, 0 100%); border-right: 0; }
+  .hero-in { position: relative; max-width: 1040px; margin: 0 auto; padding: 28px 20px 30px 84px; display: flex; align-items: center; gap: 22px; }
+  .logo { width: 128px; height: 128px; flex: none; filter: drop-shadow(0 6px 14px rgba(0, 0, 0, .35)); }
+  .hero h1 { margin: 0; font-size: clamp(28px, 5vw, 40px); line-height: 1.1; letter-spacing: -.01em; }
+  .hero p { margin: 6px 0 0; color: rgba(255, 255, 255, .85); }
+  .motto { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .motto span { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 999px; background: rgba(255, 255, 255, .12); border: 1px solid rgba(255, 255, 255, .18); }
+
+  main { max-width: 1040px; margin: 0 auto; padding: 22px 20px 8px; }
+  h2 { margin: 18px 0 12px; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+
+  .card { position: relative; display: flex; gap: 14px; align-items: flex-start; padding: 16px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow);
+    color: inherit; text-decoration: none; transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+  a.card:hover { transform: translateY(-2px); border-color: var(--green-500); }
+  a.card:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; }
+  .card.soon { opacity: .78; box-shadow: none; }
+  .ico { width: 46px; height: 46px; flex: none; border-radius: 12px; display: grid; place-items: center; color: #fff; }
+  .ico svg { width: 24px; height: 24px; }
+  .ico.g { background: linear-gradient(140deg, var(--green-500), var(--green-700)); }
+  .ico.y { background: linear-gradient(140deg, #f7c600, #e3a500); color: #1b1b1b; }
+  .ico.r { background: linear-gradient(140deg, #e8333d, var(--red)); }
+  .ico.k { background: linear-gradient(140deg, #3a463f, #1b241f); }
+  .card h3 { margin: 0; font-size: 17px; line-height: 1.25; }
+  .card p { margin: 4px 0 0; font-size: 14px; color: var(--muted); }
+  .chip { display: inline-block; margin-top: 10px; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    padding: 3px 9px; border-radius: 999px; background: var(--chip-ready); color: var(--chip-ready-ink); }
+  .soon .chip { background: var(--chip-soon); color: var(--chip-soon-ink); }
+  .go { position: absolute; right: 14px; top: 16px; color: var(--muted); }
+  .go svg { width: 18px; height: 18px; }
+
+  footer { max-width: 1040px; margin: 0 auto; padding: 18px 20px 32px; font-size: 13px; color: var(--muted); }
+  footer p { margin: 4px 0; }
+
+  @media (max-width: 560px) {
+    .hero-in { flex-direction: column; text-align: center; padding: 22px 16px 24px 16px; }
+    .hero::before { width: 30px; } .hero::after { width: 16px; }
+    .logo { width: 112px; height: 112px; }
+    .motto { justify-content: center; }
+    main, footer { padding-left: 16px; padding-right: 16px; }
+  }
 </style>
 </head>
 <body>
-<header>
-  <h1>QAQC Hub</h1>
-  <p>GYOW QA/QC tools for the office, the tablet and the phone</p>
+<header class="hero">
+  <div class="hero-in">
+    <img class="logo" src="img/logo-320.webp" alt="QA/QC Oko Gold logo" width="128" height="128">
+    <div>
+      <h1>QAQC Hub</h1>
+      <p>Oko Gold, GYOW QA/QC tools for the office, the tablet and the phone</p>
+      <div class="motto"><span>Verify</span><span>Inspect</span><span>Record</span><span>Improve</span></div>
+    </div>
+  </div>
 </header>
+
 <main>
-  <div class="tiles">
-    <a class="tile" href="field-reports/">
-      <h2>Field Reports</h2>
-      <p>Inspection reports from pre-report to issue: office, field tablet, close-out.</p>
+  <h2>Tools</h2>
+  <div class="grid">
+    <a class="card" href="field-reports/">
+      <div class="ico g"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9z"/><path d="m9 13 2 2 4-4"/></svg></div>
+      <div><h3>Field Reports</h3><p>Inspection reports from pre-report to issue: office, field tablet, close-out.</p><span class="chip">Ready</span></div>
+      <span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></span>
     </a>
-    <a class="tile" href="iso-2859/">
-      <h2>ISO 2859 Sampling</h2>
-      <p>AQL sampling plan: sample size, Ac and Re by lot size, inspection level and regime.</p>
+    <a class="card" href="iso-2859/">
+      <div class="ico y"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 4v16"/></svg></div>
+      <div><h3>ISO 2859 Sampling</h3><p>AQL sampling plan: sample size, Ac and Re by lot size, inspection level and regime.</p><span class="chip">Ready</span></div>
+      <span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></span>
     </a>
   </div>
+
+  <h2>Coming soon</h2>
+  <div class="grid">
+    <div class="card soon">
+      <div class="ico r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></div>
+      <div><h3>Walkdown Email Builder</h3><p>Walkdown emails and invites per WBS, read live from the Handover Master Control.</p><span class="chip">In progress</span></div>
+    </div>
+    <div class="card soon">
+      <div class="ico k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg></div>
+      <div><h3>HEIC Converter</h3><p>iPhone HEIC photos to JPG, on any device.</p><span class="chip">Planned</span></div>
+    </div>
+    <div class="card soon">
+      <div class="ico g"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12 12 20l-8-8V4h8z"/><circle cx="8" cy="8" r="1.5"/></svg></div>
+      <div><h3>Deficiency Photo Names</h3><p>Rename deficiency photos to DEF_WBS_ITEM_BEFORE / AFTER.</p><span class="chip">Planned</span></div>
+    </div>
+    <div class="card soon">
+      <div class="ico y"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div>
+      <div><h3>Dashboards</h3><p>ITR, deficiencies, construction completion, handover. GMIN login required.</p><span class="chip">Planned</span></div>
+    </div>
+  </div>
 </main>
-<footer>The tools run in your browser. Report data stays in the OKO-QAQC SharePoint library and on your device.</footer>
+
+<footer>
+  <p>The tools run in your browser. Report data stays in the OKO-QAQC SharePoint library and on your device.</p>
+  <p>On the tablet or phone: open this page in Edge, then menu &gt; Add to phone, to get the QAQC Hub icon.</p>
+</footer>
 </body>
 </html>
