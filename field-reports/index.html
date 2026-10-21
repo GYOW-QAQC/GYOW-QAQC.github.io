@@ -1,0 +1,1908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QAQC Field Reports</title>
+<style>
+  :root {
+    --navy: #003f53; --teal: #00556f; --gold: #c3932c; --gold-light: #f3e8cc;
+    --bg: #f2f4f6; --card: #ffffff; --border: #d5dade; --text: #1f2733; --muted: #66707a;
+    --danger: #b3261e; --danger-bg: #fdecea; --ok: #13704f; --ok-bg: #e7f4ee; --warn-bg: #fff6e0;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.4 "Segoe UI", Roboto, Arial, sans-serif; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  header.top { background: var(--navy); color: #fff; padding: 10px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; position: sticky; top: 0; z-index: 20; }
+  header.top h1 { font-size: 17px; margin: 0; letter-spacing: .02em; }
+  header.top .mode { font-size: 12px; background: rgba(255,255,255,.15); padding: 2px 8px; border-radius: 10px; }
+  header.top .spacer { flex: 1; }
+  header.top .user { font-size: 13px; opacity: .9; cursor: pointer; text-decoration: underline dotted; }
+  main { max-width: 1180px; margin: 0 auto; padding: 14px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 12px; }
+  .card > summary, .card > .head { padding: 12px 14px; font-weight: 700; color: var(--teal); text-transform: uppercase; font-size: 13px; letter-spacing: .05em; cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--gold); }
+  .card > summary::-webkit-details-marker { display: none; }
+  .card > summary::before { content: "\25B8"; color: var(--gold); transition: transform .15s; }
+  .card[open] > summary::before { transform: rotate(90deg); }
+  .card .body { padding: 12px 14px 14px; }
+  .lock { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: none; letter-spacing: 0; margin-left: auto; }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px 14px; }
+  label.f { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 3px; }
+  label.f .req { color: var(--danger); }
+  input[type=text], input[type=date], input[type=number], select, textarea {
+    width: 100%; padding: 7px 9px; border: 1px solid var(--border); border-radius: 7px; background: #fff; }
+  textarea { resize: vertical; min-height: 40px; }
+  input:disabled, select:disabled, textarea:disabled { background: #f6f7f8; color: #333; border-color: #e3e6e9; }
+  .btn { border: 0; border-radius: 8px; padding: 8px 14px; cursor: pointer; background: #e6e9ed; font-weight: 600; white-space: nowrap; }
+  .btn:hover { filter: brightness(.96); }
+  .btn.primary { background: var(--teal); color: #fff; }
+  .btn.gold { background: var(--gold); color: #1a1a1a; }
+  .btn.danger { background: #fff; color: var(--danger); border: 1px solid var(--danger); }
+  .btn.small { padding: 4px 9px; font-size: 13px; }
+  .btn:disabled { opacity: .45; cursor: default; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  table.grid { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table.grid th { background: #f4f4f4; text-align: left; font-size: 12px; color: #444; padding: 6px; border: 1px solid #e1e4e7; }
+  table.grid td { border: 1px solid #e1e4e7; padding: 4px; vertical-align: top; }
+  table.grid td.ro { padding: 7px 8px; }
+  table.grid td.act { width: 1%; white-space: nowrap; }
+  table.grid select { min-width: 110px; }
+  table.grid tr.note td { background: var(--warn-bg); font-size: 12px; color: #6b5200; border-top: 0; }
+  .scroll { overflow-x: auto; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 10px; background: #e6e9ed; color: #333; }
+  .badge.pre { background: #e8eef9; color: #234a8a; }
+  .badge.field { background: var(--gold-light); color: #6b4d00; }
+  .badge.closeout { background: #e3f0f4; color: var(--teal); }
+  .badge.issued { background: var(--ok-bg); color: var(--ok); }
+  .stepper { display: flex; gap: 4px; flex-wrap: wrap; }
+  .stepper span { font-size: 12px; padding: 4px 10px; border-radius: 12px; background: #e6e9ed; color: var(--muted); }
+  .stepper span.done { background: #d9e6ea; color: var(--teal); }
+  .stepper span.now { background: var(--gold); color: #1a1a1a; font-weight: 700; }
+  .bar { position: sticky; top: 46px; z-index: 15; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; display: flex; gap: 10px 14px; flex-wrap: wrap; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,.05); }
+  .bar .id { font-weight: 700; color: var(--navy); }
+  .bar .title { color: var(--muted); font-size: 13px; max-width: 420px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar .status { font-size: 12px; color: var(--muted); }
+  .bar .status.dirty { color: var(--danger); font-weight: 600; }
+  .banner { border-radius: 8px; padding: 9px 12px; font-size: 14px; margin-bottom: 12px; }
+  .banner.info { background: #e3f0f4; color: var(--navy); }
+  .banner.warn { background: var(--warn-bg); color: #6b5200; }
+  .photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+  .ph { border: 1px solid var(--border); border-radius: 8px; padding: 8px; background: #fafbfc; display: flex; flex-direction: column; gap: 6px; }
+  .ph img { width: 100%; height: 170px; object-fit: contain; background: #e9ecef; border-radius: 6px; }
+  .ph .n { font-size: 12px; font-weight: 700; color: var(--teal); }
+  .ph .fieldcap { font-size: 12px; color: #6b5200; background: var(--warn-bg); padding: 3px 6px; border-radius: 5px; }
+  .drawing img { max-width: 100%; max-height: 360px; display: block; margin: 0 auto 6px; border: 1px solid var(--border); }
+  .block { border: 1px dashed var(--border); border-radius: 8px; padding: 10px; margin: 8px 0; }
+  .block .kind { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
+  .hint { font-size: 12px; color: var(--muted); }
+  .list td, .list th { padding: 8px; }
+  .list tr.clickable { cursor: pointer; }
+  .list tr.clickable:hover td { background: #f7f9fa; }
+  .home-actions { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.35); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
+  .modal { background: #fff; border-radius: 12px; max-width: 520px; width: 100%; padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,.25); max-height: 90vh; overflow: auto; }
+  .modal h3 { margin: 0 0 10px; color: var(--navy); font-size: 17px; }
+  .modal .buttons { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+  .modal .field { margin-bottom: 10px; }
+  .modal .buttons.stack { flex-direction: column; align-items: stretch; }
+  .modal .buttons.stack .btn { padding: 12px 14px; text-align: left; }
+  .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--navy); color: #fff; padding: 10px 18px; border-radius: 8px; z-index: 60; font-size: 14px; }
+  .empty { color: var(--muted); font-size: 14px; padding: 6px 0; }
+  .params td:first-child { width: 34%; }
+  @media (max-width: 700px) { .bar { top: 0; position: static; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>QAQC Field Reports</h1>
+  <span class="mode" id="modeLabel"></span>
+  <span class="mode" title="App version">v2026-10-21d</span>
+  <span class="spacer"></span>
+  <span class="user" id="userLabel" data-act="set-user" title="Change your name"></span>
+</header>
+<main id="app"></main>
+<input type="file" id="picker" style="display:none">
+
+<script>
+// ============================================================================
+//  Inspection Report Generator - field_report.js
+//
+//  JavaScript port of field_report.py: builds the Field Report .docx from a
+//  report package (report.json + images) with the "docx" library, so the
+//  report can be issued from the browser (PC, tablet, phone) with nothing
+//  installed. Layout must stay identical to the Python version; parity is
+//  checked by rendering both through Word and comparing the PDFs.
+//
+//  Usage (browser: <script src=".../docx@9.5.1/dist/index.iife.js">, then
+//  this file; Node: require):
+//    const doc = await FieldReportDocx.build(report, {
+//      docx,                      // the docx library object
+//      getImage: async (path, maxWpx, maxHpx) => ({ data, width, height, type }),
+//      logo: { data, width, height },   // PNG bytes of the GMIN logo
+//      draft: true|false
+//    });
+//    const blob = await docx.Packer.toBlob(doc);
+// ============================================================================
+(function (root) {
+  'use strict';
+
+  const SITE_NAME = 'Oko Gold Mines';
+  const COUNTRY = 'Guyana';
+  const BLOCK_LABEL = 'OKO GOLD MINES\nQA/QC';
+
+  // GMIN Brand Kit (same values as field_report.py)
+  const TEAL = '00556F';
+  const GOLD = 'C3932C';
+  const GOLD_LIGHT = 'E6D3A3';
+  const LABEL_FILL = 'F4F4F4';
+  const TOTAL_FILL = 'F9F9F9';
+  const HIGHLIGHT_FILL = 'DDE3EA';
+  const BORDER = 'D9D9D9';
+  const TEXT = '222222';
+  const GRAY = '6B6B6B';
+  const TONE_COLORS = { pass: '13704F', fail: 'B3261E', neutral: '595959' };
+  const STATUS_TONES = { ACCEPTED: 'pass', CLOSED: 'pass', OPEN: 'fail', REJECTED: 'fail' };
+
+  const HEADING_FONT = 'Montserrat';
+  const BODY_FONT = 'Segoe UI';
+
+  const PAGE_W_IN = 8.5;
+  const MARGIN_LR_IN = 0.65;
+  const CONTENT_W_IN = PAGE_W_IN - 2 * MARGIN_LR_IN; // 7.2in
+  const PHOTO_COL_W_IN = CONTENT_W_IN / 2;
+  const PHOTO_BOX_W_IN = 3.45;
+  const PHOTO_BOX_H_IN = 4.4;
+  const DRAWING_BOX_W_IN = 6.9;
+  const DRAWING_BOX_H_IN = 7.0;
+  const IMAGE_TARGET_DPI = 200;
+
+  const tw = (inches) => Math.round(inches * 1440); // twips
+  const px = (inches) => inches * 96;                // docx ImageRun unit
+
+  // ---------------------------------------------------------------------------
+  //  Text helpers
+  // ---------------------------------------------------------------------------
+  // em dash (0x2014) and en dash (0x2013), built from their codes so the
+  // characters themselves never appear in this file
+  const DASHES = String.fromCharCode(0x2014, 0x2013);
+  const DASH_PUNCT = new RegExp('\\s+[' + DASHES + ']\\s+', 'g');
+  const DASH_ANY = new RegExp('[' + DASHES + ']', 'g');
+  function clean(text) {
+    // No em/en dashes in any issued report (QAQC house rule)
+    if (text === null || text === undefined) return '';
+    return String(text).replace(DASH_PUNCT, ', ').replace(DASH_ANY, '-').trim();
+  }
+  function fmtDate(iso) {
+    if (!iso) return '';
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso));
+    return m ? `${m[3]}/${m[2]}/${m[1]}` : clean(iso);
+  }
+  function fmtNumber(v) {
+    return (typeof v === 'number' && Number.isInteger(v)) ? String(v) : String(v);
+  }
+  const upper = (s) => clean(s).toUpperCase();
+
+  // ---------------------------------------------------------------------------
+  //  Builder bound to one docx library instance
+  // ---------------------------------------------------------------------------
+  function makeBuilder(D) {
+    const {
+      Paragraph, TextRun, Table, TableRow, TableCell, ImageRun, Header, Footer, Tab,
+      PageBreak, PageNumber, AlignmentType, BorderStyle, ShadingType, VerticalAlign,
+      WidthType, TableLayoutType, TabStopType, LineRuleType
+    } = D;
+    const ALIGN = { left: AlignmentType.LEFT, center: AlignmentType.CENTER, right: AlignmentType.RIGHT, justify: AlignmentType.JUSTIFIED };
+
+    function run(text, { font = BODY_FONT, size = 9.5, bold, color, italics, spacing, breakBefore } = {}) {
+      const o = { text, font, size: Math.round(size * 2) };
+      if (bold) o.bold = true;
+      if (italics) o.italics = true;
+      if (color) o.color = color;
+      if (spacing) o.characterSpacing = spacing;
+      if (breakBefore) o.break = 1;
+      return new TextRun(o);
+    }
+    const border = (color, size, space) => ({ style: BorderStyle.SINGLE, color, size, space });
+    const NONE = { style: BorderStyle.NONE, size: 0, color: 'auto' };
+    const allBorders = (b) => ({ top: b, bottom: b, left: b, right: b, insideHorizontal: b, insideVertical: b });
+
+    // A cell description; materialized by table() so keep-together can be applied
+    function cellText(text, { bold = false, color = TEXT, size = 8.5, align = 'left', font = BODY_FONT, fill, valign = 'center' } = {}) {
+      const lines = (text === null || text === undefined || text === '') ? [''] : clean(text).split('\n');
+      return {
+        kind: 'text', fill, valign,
+        para: (keepNext) => new Paragraph({
+          alignment: ALIGN[align], keepNext, spacing: { before: 0, after: 0 },
+          children: lines.map((line, i) => run(line, { font, size, bold, color, breakBefore: i > 0 }))
+        })
+      };
+    }
+
+    function table({ widths, rows, margins = { top: 70, bottom: 70, left: 110, right: 110 }, borders = true, keepTogether = false, headerRows = 0 }) {
+      const n = rows.length;
+      const chained = keepTogether ? (n <= 15 ? n - 1 : 1) : 0;
+      return new Table({
+        columnWidths: widths.map(tw),
+        width: { size: widths.reduce((a, b) => a + tw(b), 0), type: WidthType.DXA },
+        layout: TableLayoutType.FIXED,
+        alignment: AlignmentType.CENTER,
+        margins,
+        borders: borders ? allBorders(border(BORDER, 4)) : allBorders(NONE),
+        rows: rows.map((cells, r) => new TableRow({
+          cantSplit: true,
+          tableHeader: r < headerRows,
+          children: cells.map((c, i) => {
+            const keepNext = r < chained;
+            const opts = { width: { size: tw(widths[i]), type: WidthType.DXA } };
+            if (c.fill) opts.shading = { fill: c.fill, type: ShadingType.CLEAR, color: 'auto' };
+            if (c.valign) opts.verticalAlign = c.valign === 'top' ? VerticalAlign.TOP : VerticalAlign.CENTER;
+            if (c.borders) opts.borders = c.borders;
+            opts.children = c.kind === 'text' ? [c.para(keepNext)] : c.children(keepNext);
+            return new TableCell(opts);
+          })
+        }))
+      });
+    }
+
+    function spacer(pts) {
+      return new Paragraph({ spacing: { before: 0, after: 0, line: pts * 20, lineRule: LineRuleType.EXACT }, children: [] });
+    }
+
+    function sectionHeading(number, text) {
+      return new Paragraph({
+        keepNext: true, spacing: { before: 280, after: 160 },
+        border: { bottom: border(GOLD, 8, 4) },
+        children: [run(number ? `${number}. ${upper(text)}` : upper(text), { font: HEADING_FONT, size: 9.5, bold: true, color: TEAL, spacing: 10 })]
+      });
+    }
+
+    function captionParagraph(text) {
+      return new Paragraph({ alignment: AlignmentType.LEFT, spacing: { before: 80, after: 160 }, children: [run(clean(text), { size: 8, color: GRAY })] });
+    }
+
+    // fit an image into a box (inches), like fit_image() in Python
+    async function imageRun(getImage, path, maxW, maxH) {
+      const probe = await getImage(path, null, null);
+      const ratio = probe.width / probe.height;
+      let w = maxW, h = maxW / ratio;
+      if (h > maxH) { h = maxH; w = maxH * ratio; }
+      const img = await getImage(path, Math.max(1, Math.round(w * IMAGE_TARGET_DPI)), Math.max(1, Math.round(h * IMAGE_TARGET_DPI)));
+      return new ImageRun({ type: img.type || 'jpg', data: img.data, transformation: { width: px(w), height: px(h) } });
+    }
+
+    // ---- sections ------------------------------------------------------------
+    function titleBlock(data) {
+      const h = data.header || {};
+      const seq = data.seq;
+      const noText = (seq !== null && seq !== undefined) ? `No.${String(parseInt(seq, 10)).padStart(4, '0')}` : clean(data.reportId);
+      const tealBorders = { top: border(TEAL, 4), bottom: border(TEAL, 4), left: border(TEAL, 4), right: border(TEAL, 4) };
+      const r0 = [
+        Object.assign(cellText(BLOCK_LABEL, { bold: true, color: 'FFFFFF', size: 9.5, font: HEADING_FONT, fill: TEAL, valign: 'top' }),
+          { borders: Object.assign({}, tealBorders, { right: border('FFFFFF', 8) }) }),
+        Object.assign(cellText(upper(h.title), { bold: true, color: 'FFFFFF', size: 9.5, font: HEADING_FONT, fill: TEAL, valign: 'top' }), { borders: tealBorders }),
+        Object.assign(cellText(noText, { bold: true, color: 'FFFFFF', size: 15, font: HEADING_FONT, fill: TEAL, align: 'right', valign: 'top' }), { borders: tealBorders })
+      ];
+      const wbs = clean(h.wbs);
+      const r1 = [
+        cellText(wbs ? `WBS ${wbs}` : '', { bold: true, size: 9, fill: LABEL_FILL, valign: 'top' }),
+        cellText(h.location, { size: 9, valign: 'top' }),
+        cellText('DATE OF INSPECTION:\n' + fmtDate(h.inspectionDate), { size: 8.5, valign: 'top' })
+      ];
+      return table({ widths: [1.95, 3.85, 1.4], rows: [r0, r1], margins: { top: 110, bottom: 110, left: 140, right: 140 } });
+    }
+
+    function kvGrid(pairs) {
+      const rows = [];
+      for (let i = 0; i < pairs.length; i += 2) {
+        const row = [];
+        for (const pair of pairs.slice(i, i + 2)) {
+          row.push(cellText(pair[0] + ':', { bold: true, size: 8.5, fill: LABEL_FILL, valign: 'top' }));
+          row.push(cellText(pair[1], { size: 8.5, valign: 'top' }));
+        }
+        if (row.length === 2) {
+          row.push(cellText('', { fill: LABEL_FILL }));
+          row.push({ kind: 'raw', children: () => [new Paragraph({ children: [] })] });
+        }
+        rows.push(row);
+      }
+      return table({ widths: [1.5, 2.1, 1.5, 2.1], rows, margins: { top: 100, bottom: 100, left: 130, right: 130 }, keepTogether: true });
+    }
+
+    function gridTable(headers, body, widths, fmt, total) {
+      const rows = [headers.map(hd => cellText(hd, { bold: true, size: 8.5, fill: LABEL_FILL }))];
+      body.forEach(values => rows.push(values.map((v, i) => cellText(v, Object.assign({ size: 8.5 }, fmt ? fmt(i, v) : {})))));
+      if (total) rows.push(total.map((v, i) => cellText(v, Object.assign({ size: 8.5, bold: true, fill: TOTAL_FILL }, (fmt && i > 0) ? fmt(i, v) : {}))));
+      return table({ widths, rows, keepTogether: true, headerRows: 1 });
+    }
+
+    function columnWidths(columns) {
+      const weights = columns.map(c => c.type === 'number' ? 0.8 : c.type === 'result' ? 1.0 : 1.35);
+      const s = weights.reduce((a, b) => a + b, 0);
+      return weights.map(w => CONTENT_W_IN * w / s);
+    }
+
+    function resultTone(col, value) {
+      for (const opt of col.options || []) if (String(opt.value || '').toUpperCase() === String(value).toUpperCase()) return opt.tone || 'neutral';
+      return 'neutral';
+    }
+
+    function resultsTable(block) {
+      const columns = block.columns || [], rows = block.rows || [];
+      const filled = (v) => v !== null && v !== undefined && v !== '';
+      const body = rows.map(r => columns.map(c => filled(r[c.key]) ? fmtNumber(r[c.key]) : ''));
+      let total = null;
+      if (block.totalRow && rows.length) {
+        total = columns.map((col, i) => {
+          if (i === 0) return 'Total';
+          if (col.total === 'sum') {
+            const s = rows.reduce((a, r) => a + (parseFloat(r[col.key]) || 0), 0);
+            let txt = fmtNumber(s);
+            if (col.percentOf) {
+              const base = rows.reduce((a, r) => a + (parseFloat(r[col.percentOf]) || 0), 0);
+              if (base) txt += ` (${Math.round(100 * s / base)}%)`;
+            }
+            return txt;
+          }
+          if (col.total === 'worst' && col.type === 'result') {
+            const vals = rows.filter(r => r[col.key]).map(r => String(r[col.key]));
+            const fails = vals.filter(v => resultTone(col, v) === 'fail');
+            const passes = vals.filter(v => resultTone(col, v) === 'pass');
+            return fails.length ? fails[0] : (passes.length && passes.length === vals.length ? passes[0] : '');
+          }
+          return '';
+        });
+      }
+      const fmt = (i, v) => (columns[i].type === 'result' && v)
+        ? { bold: true, color: TONE_COLORS[resultTone(columns[i], v)], align: 'center' } : {};
+      return gridTable(columns.map(c => c.label || ''), body, columnWidths(columns), fmt, total);
+    }
+
+    function findingsTable(findings) {
+      if (!findings.length) findings = [{ id: 1, location: '', finding: 'No findings recorded during this inspection.', recommendation: 'N/A', status: '' }];
+      const rows = findings.map((f, i) => [String(i + 1), f.location, f.finding, f.recommendation, (f.status || '').toUpperCase()]);
+      const fmt = (i, v) => (i === 4 && v) ? { bold: true, color: TONE_COLORS[STATUS_TONES[v] || 'neutral'], align: 'center' } : {};
+      return gridTable(['No.', 'Location / Ref.', 'Finding', 'Recommendation', 'Status'], rows, [0.5, 1.65, 2.45, 1.55, 1.05], fmt);
+    }
+
+    async function drawingBlocks(getImage, items) {
+      const out = [];
+      for (const d of items) {
+        const img = await imageRun(getImage, d.file, DRAWING_BOX_W_IN, DRAWING_BOX_H_IN);
+        out.push(table({ widths: [CONTENT_W_IN], rows: [[{ kind: 'raw', children: () => [new Paragraph({ alignment: AlignmentType.CENTER, children: [img] })] }]] }));
+        out.push(d.caption ? captionParagraph(d.caption) : spacer(6));
+      }
+      return out;
+    }
+
+    async function photoGrid(getImage, photos) {
+      const rows = [];
+      for (let i = 0; i < photos.length; i += 2) {
+        const row = [];
+        for (let k = i; k < Math.min(i + 2, photos.length); k++) {
+          const ph = photos[k];
+          const img = await imageRun(getImage, ph.file, PHOTO_BOX_W_IN, PHOTO_BOX_H_IN);
+          const cap = clean(ph.caption);
+          row.push({ kind: 'raw', valign: 'top', children: () => [
+            new Paragraph({ spacing: { after: 0 }, children: [img] }),
+            captionParagraph(cap ? `Photo ${k + 1}: ${cap}` : `Photo ${k + 1}`)
+          ] });
+        }
+        if (row.length === 1) row.push({ kind: 'raw', children: () => [new Paragraph({ children: [] })] });
+        rows.push(row);
+      }
+      return table({ widths: [PHOTO_COL_W_IN, PHOTO_COL_W_IN], rows, borders: false, margins: { top: 0, bottom: 60, left: 0, right: 110 } });
+    }
+
+    function bodyText(text) {
+      return clean(text).split('\n').filter(p => p.trim())
+        .map(p => new Paragraph({ alignment: AlignmentType.JUSTIFIED, spacing: { after: 120 }, children: [run(p.trim())] }));
+    }
+
+    function inspectorBlock(data) {
+      const h = data.header || {}, issued = data.issued || {};
+      const indent = { right: tw(CONTENT_W_IN - 3.6) };
+      return [
+        new Paragraph({ spacing: { before: 320 }, indent, keepNext: true, border: { top: border(BORDER, 6, 10) },
+          children: [run('QA/QC INSPECTOR', { font: HEADING_FONT, size: 9, bold: true, color: TEAL, spacing: 10 })] }),
+        new Paragraph({ keepNext: true, children: [run(`Name: ${clean(h.inspector)}`, { size: 9 })] }),
+        // blank signature line: each inspector signs the issued PDF themselves
+        new Paragraph({ spacing: { before: 600, after: 40 }, indent, keepNext: true, border: { bottom: border(TEXT, 8, 1) }, children: [] }),
+        new Paragraph({ keepNext: true, spacing: { after: 40 }, children: [run('Signature', { size: 9 })] }),
+        new Paragraph({ children: [run(`Date: ${fmtDate(issued.date)}`, { size: 9 })] })
+      ];
+    }
+
+    function band(text, fill, color, size) {
+      return [
+        table({ widths: [CONTENT_W_IN], rows: [[cellText(upper(text), { bold: true, color, size, font: HEADING_FONT, fill, align: 'center' })]],
+          borders: false, margins: { top: 110, bottom: 110, left: 110, right: 110 } }),
+        spacer(4)
+      ];
+    }
+
+    async function annexes(getImage, items) {
+      const out = [];
+      for (let n = 0; n < items.length; n++) {
+        const annex = items[n];
+        out.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 200 },
+          children: [new PageBreak(), run(`ANNEX ${n + 1}.`, { font: HEADING_FONT, size: 10, bold: true, color: TEXT })] }));
+        if (annex.title) out.push(...band(annex.title, GOLD, TEXT, 10.5));
+        for (const block of annex.blocks || []) {
+          if (block.kind === 'table') {
+            if (block.heading) out.push(...band(block.heading, GOLD, TEXT, 9));
+            const cols = block.columns || [];
+            const hl = new Set(block.highlightRows || []);
+            const rows = [cols.map(c => cellText(c, { bold: true, size: 8, fill: GOLD_LIGHT, align: 'center' }))];
+            (block.rows || []).forEach((values, r) => {
+              const on = hl.has(r);
+              rows.push(values.map(v => cellText(v, { size: 8, bold: on, fill: on ? HIGHLIGHT_FILL : undefined, align: 'center' })));
+            });
+            out.push(table({ widths: cols.map(() => CONTENT_W_IN / cols.length), rows, margins: { top: 45, bottom: 45, left: 110, right: 110 }, headerRows: 1 }));
+            out.push(spacer(8));
+          } else if (block.kind === 'image') {
+            out.push(...await drawingBlocks(getImage, [block]));
+          } else if (block.kind === 'text') {
+            out.push(...bodyText(block.text));
+          }
+        }
+      }
+      return out;
+    }
+
+    function headerFooter(data, draft, logo) {
+      const h = data.header || {};
+      const title = clean(h.title), subject = clean(h.subject);
+      const label = title + (subject ? ` | ${subject}` : '');
+      const tabs = [{ type: TabStopType.RIGHT, position: tw(CONTENT_W_IN) }];
+      const logoH = 0.3, logoW = logoH * logo.width / logo.height;
+      const headerKids = [
+        new ImageRun({ type: 'png', data: logo.data, transformation: { width: px(logoW), height: px(logoH) } }),
+        new TextRun({ children: [new Tab()] })
+      ];
+      if (draft) headerKids.push(run('DRAFT   ', { font: HEADING_FONT, size: 8, bold: true, color: TONE_COLORS.fail }));
+      headerKids.push(run(label, { size: 7.5, color: GRAY }));
+
+      const issued = data.issued || {};
+      const dateTxt = fmtDate(issued.date || h.inspectionDate);
+      const left = [h.wbs ? `WBS ${clean(h.wbs)}` : '', SITE_NAME, COUNTRY].filter(Boolean).join(' · ');
+      const right = clean(data.reportId) + (dateTxt ? ` · ${dateTxt}` : '') + ' · Page ';
+      const small = { font: BODY_FONT, size: 15, color: GRAY };
+      return {
+        headers: { default: new Header({ children: [new Paragraph({ style: 'Header', tabStops: tabs, children: headerKids })] }) },
+        footers: { default: new Footer({ children: [new Paragraph({
+          style: 'Footer', tabStops: tabs, border: { top: border(BORDER, 6, 6) },
+          children: [
+            new TextRun(Object.assign({ children: [left, new Tab()] }, small)),
+            new TextRun(Object.assign({ text: right }, small)),
+            new TextRun(Object.assign({ children: [PageNumber.CURRENT] }, small)),
+            new TextRun(Object.assign({ text: ' of ' }, small)),
+            new TextRun(Object.assign({ children: [PageNumber.TOTAL_PAGES] }, small))
+          ] })] }) }
+      };
+    }
+
+    // ---- assembly --------------------------------------------------------------
+    async function build(data, { getImage, logo, draft }) {
+      const children = [titleBlock(data)];
+      let n = 0;
+      const g = data.general || {};
+      children.push(sectionHeading(++n, 'General Information'));
+      children.push(kvGrid([
+        ['Project', g.project], ['WBS / Area', g.wbsArea],
+        ['System / Equipment No.', g.system], ['Description', g.description],
+        ['Contractor', g.contractor], ['Drawing No./Rev.', g.drawings]
+      ]));
+      const params = data.parameters || [];
+      if (params.length) {
+        children.push(sectionHeading(++n, 'Engineering / Inspection Data'));
+        children.push(kvGrid(params.map(p => [clean(p.label), p.value])));
+      }
+      const scope = data.scope || [];
+      if (scope.length) {
+        children.push(sectionHeading(++n, 'Inspection Scope'));
+        children.push(gridTable(['Scope Item', 'Quantity / Extent', 'Drawing Ref.', 'Notes'],
+          scope.map(s => [s.item, s.extent, s.drawingRef, s.notes]), [1.8, 1.8, 1.8, 1.8]));
+      }
+      for (const block of data.results || []) {
+        children.push(sectionHeading(++n, block.title || 'Inspection Results'));
+        children.push(resultsTable(block));
+      }
+      children.push(sectionHeading(++n, 'Findings'));
+      children.push(findingsTable(data.findings || []));
+      const drawings = data.drawings || [];
+      if (drawings.length) {
+        children.push(sectionHeading(++n, 'Drawings'));
+        children.push(...await drawingBlocks(getImage, drawings));
+      }
+      const photos = data.photos || [];
+      if (photos.length) {
+        children.push(sectionHeading(++n, 'Pictures'));
+        children.push(await photoGrid(getImage, photos));
+      }
+      children.push(sectionHeading(++n, 'Conclusion'));
+      children.push(...bodyText(data.conclusion || '(Conclusion to be written at close-out.)'));
+      children.push(...inspectorBlock(data));
+      children.push(...await annexes(getImage, data.annexes || []));
+
+      const hf = headerFooter(data, draft, logo);
+      return new D.Document({
+        creator: 'QAQC Field Reports',
+        title: clean((data.header || {}).title),
+        // same Word layout mode as the python-docx template (Word 2010); mode
+        // 15 breaks justified lines slightly differently
+        compatabilityModeVersion: 14,
+        styles: {
+          default: { document: {
+            run: { font: BODY_FONT, size: 19, color: TEXT },
+            paragraph: { spacing: { after: 80, line: 276, lineRule: LineRuleType.AUTO } }
+          } },
+          paragraphStyles: ['Header', 'Footer'].map(id => ({
+            id, name: id.toLowerCase(), basedOn: 'Normal',
+            paragraph: { spacing: { after: 0, line: 240, lineRule: LineRuleType.AUTO } }
+          }))
+        },
+        sections: [{
+          properties: { page: {
+            size: { width: tw(8.5), height: tw(11) },
+            margin: { top: tw(0.95), bottom: tw(0.75), left: tw(MARGIN_LR_IN), right: tw(MARGIN_LR_IN), header: tw(0.35), footer: tw(0.35) }
+          } },
+          headers: hf.headers, footers: hf.footers, children
+        }]
+      });
+    }
+
+    return { build };
+  }
+
+  // Cut at a word end, so file names never stop in the middle of a word
+  function shortText(text, limit) {
+    let s = String(text || '');
+    if (s.length > limit) {
+      const cut = s.slice(0, limit), space = cut.lastIndexOf(' ');
+      s = space >= limit / 2 ? cut.slice(0, space) : cut;
+    }
+    return s.replace(/[ .,;:-]+$/, '');
+  }
+
+  function outputName(data, draft) {
+    const sanitize = (s) => clean(s).replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, ' ').trim().slice(0, 120);
+    const rid = sanitize(data.reportId || 'Field_Report');
+    const title = shortText(sanitize((data.header || {}).title || ''), 60);
+    return (title ? `${rid} - ${title}` : rid) + (draft ? ' - DRAFT' : '') + '.docx';
+  }
+
+  const api = {
+    build: (data, opts) => makeBuilder(opts.docx).build(data, opts),
+    outputName, shortText, clean, fmtDate
+  };
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  else root.FieldReportDocx = api;
+})(typeof self !== 'undefined' ? self : this);
+
+</script>
+<script>
+(function () {
+'use strict';
+
+// ---------------------------------------------------------------------------
+//  Constants and state
+// ---------------------------------------------------------------------------
+const PHASES = ['pre', 'field', 'closeout', 'issued'];
+const PHASE_LABEL = { pre: 'Pre-report', field: 'Field', closeout: 'Close-out', issued: 'Issued' };
+const STATUS_OPTIONS = ['', 'ACCEPTED', 'OPEN', 'CLOSED', 'REJECTED'];
+// which phases may edit each part of the report (the device rule comes on top)
+const RULES = {
+  header: ['pre', 'closeout'], inspDate: ['pre', 'field', 'closeout'], models: ['pre'],
+  params: ['pre', 'field', 'closeout'], paramsStruct: ['pre', 'closeout'], scope: ['pre', 'closeout'],
+  results: ['pre', 'field', 'closeout'], resultsStruct: ['pre', 'closeout'], findings: ['field', 'closeout'],
+  drawings: ['pre', 'closeout'], photosAdd: ['field'], photos: ['field', 'closeout'],
+  photoReplace: ['closeout'], conclusion: ['closeout'], annexes: ['pre', 'closeout']
+};
+
+// inspection models, built in from Models/*.json by build_web.py
+const BUILT_IN_MODELS = [{"id": "bolt_torque", "name": "Bolt Torque Verification", "modelVersion": 1, "parameters": [{"label": "Bolt Grade / Class", "phase": "pre"}, {"label": "Required Torque", "phase": "pre"}, {"label": "Torque Wrench ID", "phase": "field"}, {"label": "Calibration Cert. No.", "phase": "field"}, {"label": "Calibration Valid Until", "phase": "field"}, {"label": "Inspection Method", "phase": "pre"}], "results": {"title": "Bolt Torque Inspection Results", "totalRow": true, "columns": [{"key": "location", "label": "Location", "phase": "pre"}, {"key": "member", "label": "Member / Joint", "phase": "pre"}, {"key": "boltSize", "label": "Bolt Size", "phase": "pre"}, {"key": "total", "label": "Total", "phase": "pre", "type": "number", "total": "sum"}, {"key": "checked", "label": "Checked", "phase": "field", "type": "number", "total": "sum", "percentOf": "total"}, {"key": "requiredTorque", "label": "Required Torque", "phase": "pre"}, {"key": "result", "label": "Result", "phase": "field", "type": "result", "total": "worst", "options": [{"value": "PASS", "tone": "pass"}, {"value": "FAIL", "tone": "fail"}, {"value": "N/A", "tone": "neutral"}]}]}}, {"id": "general", "name": "General Inspection Checklist", "modelVersion": 1, "parameters": [{"label": "Inspection Method", "phase": "pre"}, {"label": "Measuring Equipment", "phase": "field"}], "results": {"title": "Inspection Checklist", "totalRow": false, "columns": [{"key": "item", "label": "Item", "phase": "pre"}, {"key": "requirement", "label": "Requirement / Reference", "phase": "pre"}, {"key": "result", "label": "Result", "phase": "field", "type": "result", "options": [{"value": "OK", "tone": "pass"}, {"value": "NOT OK", "tone": "fail"}, {"value": "N/A", "tone": "neutral"}]}, {"key": "notes", "label": "Notes", "phase": "field"}]}}, {"id": "plumbness", "name": "Column Plumbness Check", "modelVersion": 1, "parameters": [{"label": "Plumbness Tolerance", "phase": "pre"}, {"label": "Measuring Instrument", "phase": "field"}, {"label": "Inspection Method", "phase": "pre"}], "results": {"title": "Column Plumbness Check", "totalRow": false, "columns": [{"key": "location", "label": "Location", "phase": "pre"}, {"key": "columns", "label": "Columns", "phase": "pre"}, {"key": "method", "label": "Method", "phase": "pre"}, {"key": "faces", "label": "Faces Checked", "phase": "field"}, {"key": "result", "label": "Result", "phase": "field", "type": "result", "options": [{"value": "PLUMB", "tone": "pass"}, {"value": "OUT OF PLUMB", "tone": "fail"}, {"value": "N/A", "tone": "neutral"}]}]}}];
+
+const params = new URLSearchParams(location.search);
+if (params.get('t')) sessionStorage.setItem('fr_token', params.get('t'));
+// server: PC with server.py; folder: PC browser working in the reports folder
+// itself; file: tablet or phone, the package travels as a .zip
+const S = {
+  mode: (location.protocol.startsWith('http') && sessionStorage.getItem('fr_token')) ? 'server' : 'file',
+  token: sessionStorage.getItem('fr_token'),
+  models: [], list: null, view: 'home',
+  report: null, file: null, origName: null, readOnly: false, issuedPkg: false,
+  assets: {}, removed: new Set(), baseRevision: null, dirty: false
+};
+const app = document.getElementById('app');
+const office = () => S.mode === 'server' || S.mode === 'folder';
+
+// ---------------------------------------------------------------------------
+//  Small helpers
+// ---------------------------------------------------------------------------
+const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const clone = (o) => JSON.parse(JSON.stringify(o));
+const nowIso = () => new Date().toISOString();
+const uid = (p) => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const fmtDate = (iso) => { if (!iso) return ''; const d = String(iso).slice(0, 10).split('-'); return d.length === 3 ? `${d[2]}/${d[1]}/${d[0]}` : iso; };
+const fmtWhen = (iso) => { if (!iso) return ''; const d = new Date(iso); return isNaN(d) ? iso : d.toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }); };
+
+function getPath(obj, path) { return path.split('.').reduce((o, k) => (o == null ? undefined : o[k]), obj); }
+function setPath(obj, path, value) {
+  const keys = path.split('.'); let o = obj;
+  for (let i = 0; i < keys.length - 1; i++) o = o[keys[i]];
+  o[keys[keys.length - 1]] = value;
+}
+function user() { try { return localStorage.getItem('fr_user') || ''; } catch (e) { return ''; } }
+function setUserLabel() { document.getElementById('userLabel').textContent = user() ? `Signed as: ${user()}` : 'Set your name'; }
+
+function toast(msg, ms) {
+  const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.remove(), ms || 2600);
+}
+
+// modal: resolves with { button, values } (values = named inputs inside the modal)
+function modal({ title, html, buttons, stack }) {
+  return new Promise((resolve) => {
+    const bg = document.createElement('div'); bg.className = 'modal-bg';
+    bg.innerHTML = `<div class="modal"><h3>${esc(title)}</h3><div>${html || ''}</div><div class="buttons ${stack ? 'stack' : ''}">${
+      (buttons || [{ label: 'OK', value: 'ok', primary: true }]).map((b, i) =>
+        `<button class="btn ${b.primary ? 'primary' : ''} ${b.danger ? 'danger' : ''}" data-i="${i}">${esc(b.label)}</button>`).join('')
+    }</div></div>`;
+    document.body.appendChild(bg);
+    const first = bg.querySelector('input, textarea'); if (first) first.focus();
+    bg.querySelectorAll('.buttons button').forEach(btn => btn.addEventListener('click', () => {
+      const b = buttons ? buttons[+btn.dataset.i] : { value: 'ok' };
+      const values = {}; bg.querySelectorAll('[name]').forEach(el => { values[el.name] = el.value.trim(); });
+      bg.remove(); resolve({ button: b.value, values });
+    }));
+  });
+}
+const alertBox = (title, text) => modal({ title, html: `<p>${esc(text)}</p>` });
+const confirmBox = async (title, text, okLabel) =>
+  (await modal({ title, html: `<p>${esc(text)}</p>`, buttons: [{ label: 'Cancel', value: 'no' }, { label: okLabel || 'OK', value: 'yes', primary: true }] })).button === 'yes';
+
+// the name goes into the report history, so it is picked from the team, not typed
+const TEAM = ['João Ricardo Guerrero Portilho', 'Marlene Mena', 'Tarique Richmond', 'Oneila Brock'];
+
+async function askUser(force, title) {
+  if (user() && !force) return user();
+  const cur = user();
+  const r = await modal({ title: title || 'Who are you?', html: '<p class="hint">Your name goes into the report history.</p>', stack: true,
+    buttons: [...TEAM.map(n => ({ label: n, value: n, primary: n === cur })), { label: 'Someone else', value: '?other' }] });
+  let name = r.button;
+  if (name === '?other') {
+    const o = await modal({ title: 'Your name', html: `<div class="field"><label class="f">Full name, as it should appear in the report history</label><input type="text" name="name" value="${esc(TEAM.includes(cur) ? '' : cur)}"></div>`,
+      buttons: [{ label: 'Save', value: 'ok', primary: true }] });
+    name = o.values.name;
+  }
+  if (name) { try { localStorage.setItem('fr_user', name); } catch (e) { /* private mode */ } }
+  setUserLabel();
+  return user();
+}
+// shared tablet: whoever opens a report confirms who they are
+const confirmUser = () => askUser(true, 'Who is working on this report?');
+
+async function api(method, path, body) {
+  if (S.mode === 'folder') return localApi(method, path, body);
+  const r = await fetch(path, { method, headers: { 'X-Token': S.token, 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+  let j = {}; try { j = await r.json(); } catch (e) { j = { error: 'Unexpected answer from the app (is the black window still open?)' }; }
+  if (!r.ok) { const err = new Error(j.error || r.statusText); err.status = r.status; throw err; }
+  return j;
+}
+const blobToB64 = (blob) => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(',')[1]); fr.onerror = rej; fr.readAsDataURL(blob); });
+
+// ---------------------------------------------------------------------------
+//  Images: downsized and made upright in the browser before they are stored
+// ---------------------------------------------------------------------------
+async function processImage(file) {
+  try {
+    const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' });
+    const scale = Math.min(1, 2000 / Math.max(bmp.width, bmp.height));
+    const w = Math.round(bmp.width * scale), h = Math.round(bmp.height * scale);
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    c.getContext('2d').drawImage(bmp, 0, 0, w, h); if (bmp.close) bmp.close();
+    const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.85));
+    if (!blob) throw new Error('encode');
+    return blob;
+  } catch (e) {
+    if (S.mode === 'server') return file; // the PC side converts it (HEIC included)
+    throw new Error(`"${file.name}" could not be read by the browser. If it is a HEIC photo, set the camera to JPG: Camera > Settings > Advanced picture options > High efficiency pictures > Off.`);
+  }
+}
+
+function pickFiles({ accept, multiple, capture }) {
+  return new Promise((resolve) => {
+    const old = document.getElementById('picker');
+    const p = old.cloneNode(); old.replaceWith(p); // fresh input, no stale listener
+    p.accept = accept || ''; p.multiple = !!multiple;
+    if (capture) p.setAttribute('capture', 'environment'); else p.removeAttribute('capture');
+    p.addEventListener('change', () => resolve(Array.from(p.files || [])), { once: true });
+    p.click();
+  });
+}
+
+async function addImages(files, folder) {
+  const added = [];
+  for (const f of files) {
+    try {
+      const blob = await processImage(f);
+      const path = `${folder}/${uid(folder[0])}.jpg`;
+      S.assets[path] = { blob, url: URL.createObjectURL(blob) };
+      added.push(path);
+    } catch (e) { await alertBox('Image not added', e.message); }
+  }
+  return added;
+}
+
+function dropAsset(path) {
+  const a = S.assets[path];
+  if (a && a.blob && a.url) URL.revokeObjectURL(a.url);
+  if (a && !a.blob) S.removed.add(path);
+  delete S.assets[path];
+}
+
+// a: { url } image on the server; { url, src } image read from the package;
+// { url, blob } image added here and not saved yet
+function assetUrl(path) {
+  const a = S.assets[path]; if (a) return a.url;
+  return '';
+}
+
+// ---------------------------------------------------------------------------
+//  ZIP (stored, no compression) - same format the PC side writes
+// ---------------------------------------------------------------------------
+const CRC_TABLE = (() => { const t = []; for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1); t[n] = c >>> 0; } return t; })();
+function crc32(buf) { let c = 0xFFFFFFFF; for (let i = 0; i < buf.length; i++) c = (c >>> 8) ^ CRC_TABLE[(c ^ buf[i]) & 0xFF]; return (c ^ 0xFFFFFFFF) >>> 0; }
+const u16 = (n) => [n & 0xFF, (n >>> 8) & 0xFF];
+const u32 = (n) => [n & 0xFF, (n >>> 8) & 0xFF, (n >>> 16) & 0xFF, (n >>> 24) & 0xFF];
+
+function makeZip(entries) {
+  const enc = new TextEncoder(); const local = []; const central = []; let offset = 0;
+  const d = new Date();
+  const dosTime = ((d.getHours() & 0x1F) << 11) | ((d.getMinutes() & 0x3F) << 5) | (Math.floor(d.getSeconds() / 2) & 0x1F);
+  const dosDate = (((d.getFullYear() - 1980) & 0x7F) << 9) | (((d.getMonth() + 1) & 0xF) << 5) | (d.getDate() & 0x1F);
+  for (const e of entries) {
+    const name = enc.encode(e.name), data = e.data, crc = crc32(data);
+    const lh = new Uint8Array([0x50, 0x4b, 0x03, 0x04, 20, 0, 0, 0, 0, 0, ...u16(dosTime), ...u16(dosDate), ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(name.length), 0, 0]);
+    local.push(lh, name, data);
+    const ch = new Uint8Array([0x50, 0x4b, 0x01, 0x02, 20, 0, 20, 0, 0, 0, 0, 0, ...u16(dosTime), ...u16(dosDate), ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(name.length), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...u32(offset)]);
+    central.push(ch, name);
+    offset += lh.length + name.length + data.length;
+  }
+  const size = central.reduce((s, p) => s + p.length, 0);
+  const eocd = new Uint8Array([0x50, 0x4b, 0x05, 0x06, 0, 0, 0, 0, ...u16(entries.length), ...u16(entries.length), ...u32(size), ...u32(offset), 0, 0]);
+  return new Blob([...local, ...central, eocd], { type: 'application/zip' });
+}
+
+// Reads only the entries asked for (want(name) true), straight from the file,
+// so listing a folder of packages does not load every photo.
+async function readZip(blob, want) {
+  const bytes = async (from, to) => new Uint8Array(await blob.slice(from, to).arrayBuffer());
+  const tailStart = Math.max(0, blob.size - 65557), tail = await bytes(tailStart, blob.size);
+  const tv = new DataView(tail.buffer); let e = -1;
+  for (let i = tail.length - 22; i >= 0; i--) if (tv.getUint32(i, true) === 0x06054b50) { e = i; break; }
+  if (e < 0) throw new Error('This file is not a report package (.zip).');
+  const count = tv.getUint16(e + 10, true), cdSize = tv.getUint32(e + 12, true), cdOff = tv.getUint32(e + 16, true);
+  const cd = await bytes(cdOff, cdOff + cdSize), dv = new DataView(cd.buffer), dec = new TextDecoder();
+  const out = {}; let p = 0;
+  for (let k = 0; k < count; k++) {
+    if (dv.getUint32(p, true) !== 0x02014b50) throw new Error('The package is damaged.');
+    const method = dv.getUint16(p + 10, true), csize = dv.getUint32(p + 20, true);
+    const nlen = dv.getUint16(p + 28, true), xlen = dv.getUint16(p + 30, true), clen = dv.getUint16(p + 32, true), off = dv.getUint32(p + 42, true);
+    const name = dec.decode(cd.subarray(p + 46, p + 46 + nlen));
+    p += 46 + nlen + xlen + clen;
+    if (want && !want(name)) continue;
+    const lh = new DataView((await bytes(off, off + 30)).buffer);
+    const start = off + 30 + lh.getUint16(26, true) + lh.getUint16(28, true);
+    let data = await bytes(start, start + csize);
+    if (method === 8) data = new Uint8Array(await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
+    else if (method !== 0) throw new Error('The package uses an unsupported compression.');
+    out[name] = data;
+  }
+  return out;
+}
+
+function download(blob, name) {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+}
+
+// ---------------------------------------------------------------------------
+//  Local draft (IndexedDB): survives a tab reload or Chrome closing the tab
+// ---------------------------------------------------------------------------
+let dbPromise = null;
+function db() {
+  if (!dbPromise) dbPromise = new Promise((res, rej) => {
+    const r = indexedDB.open('fieldReports', 2);
+    r.onupgradeneeded = () => {
+      for (const name of ['drafts', 'settings']) if (!r.result.objectStoreNames.contains(name)) r.result.createObjectStore(name, { keyPath: 'key' });
+    };
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  });
+  return dbPromise;
+}
+async function idb(mode, fn, store = 'drafts') {
+  try {
+    const d = await db();
+    return await new Promise((res, rej) => {
+      const tx = d.transaction(store, mode); const req = fn(tx.objectStore(store));
+      tx.oncomplete = () => res(req && req.result); tx.onerror = () => rej(tx.error);
+    });
+  } catch (e) { return null; } // storage blocked: the app still works, just without drafts
+}
+const getSetting = async (key) => { const v = await idb('readonly', st => st.get(key), 'settings'); return v ? v.value : null; };
+const setSetting = (key, value) => idb('readwrite', st => (value == null ? st.delete(key) : st.put({ key, value })), 'settings');
+const draftKey = () => `${S.mode}:${S.report.reportId}`;
+// same number is not enough: a deleted test report and a new one can share
+// it, so the creation time must match too
+const created = (r) => (r && r.phaseHistory && r.phaseHistory[0] && r.phaseHistory[0].at) || '';
+const sameReport = (d, r) => !!d && created(d.report) === created(r);
+let draftTimer = null;
+function scheduleDraft() { clearTimeout(draftTimer); draftTimer = setTimeout(saveDraft, 700); }
+async function saveDraft() {
+  if (!S.report || S.readOnly) return;
+  const assets = {}; for (const [p, a] of Object.entries(S.assets)) if (a.blob) assets[p] = a.blob;
+  await idb('readwrite', st => st.put({
+    key: draftKey(), mode: S.mode, reportId: S.report.reportId, title: S.report.header.title,
+    report: S.report, file: S.file, origName: S.origName, baseRevision: S.baseRevision,
+    removed: [...S.removed], assets, savedAt: nowIso(), dirty: S.dirty
+  }));
+}
+const getDraft = (key) => idb('readonly', st => st.get(key));
+const dropDraft = (key) => idb('readwrite', st => st.delete(key || draftKey()));
+const allDrafts = () => idb('readonly', st => st.getAll());
+
+function markDirty() {
+  S.dirty = true; scheduleDraft();
+  const st = document.getElementById('saveStatus'); if (st) { st.textContent = 'Unsaved changes'; st.className = 'status dirty'; }
+}
+
+// ---------------------------------------------------------------------------
+//  Who may edit what
+// ---------------------------------------------------------------------------
+function ownsPhase(ph) { return office() ? (ph === 'pre' || ph === 'closeout') : ph === 'field'; }
+function can(part) {
+  if (!S.report || S.readOnly) return false;
+  const ph = S.report.phase;
+  return ownsPhase(ph) && RULES[part].includes(ph);
+}
+
+// ---------------------------------------------------------------------------
+//  Rendering
+// ---------------------------------------------------------------------------
+function render() {
+  document.getElementById('modeLabel').textContent = office() ? 'Office (PC)' : 'Field (tablet)';
+  setUserLabel();
+  app.innerHTML = S.view === 'report' ? reportView() : homeView();
+}
+
+function badge(ph) { return `<span class="badge ${ph}">${esc(PHASE_LABEL[ph] || ph)}</span>`; }
+
+function homeView() {
+  if (S.mode === 'file') return homeFile();
+  const L = S.list || { inProgress: [], issued: [] };
+  const rows = L.inProgress.map(r => r.error
+    ? `<tr><td colspan="7">${esc(r.file)}: ${esc(r.error)}</td></tr>`
+    : `<tr class="clickable" data-act="open" data-file="${esc(r.file)}">
+        <td><b>${esc(r.reportId)}</b></td><td>${esc(r.title)}</td><td>${esc(r.wbs)}</td><td>${esc(r.inspector)}</td>
+        <td>${badge(r.phase)}</td><td class="hint">rev ${esc(r.revision)}<br>${esc(fmtWhen(r.lastSaved && r.lastSaved.at))} ${esc(r.lastSaved && r.lastSaved.by)}</td></tr>`).join('');
+  const issued = L.issued.map(r => `<tr><td><b>${esc(r.reportId)}</b></td><td>${esc(r.title)}</td><td>
+      ${r.documents.map(d => `<button class="btn small" data-act="open-doc" data-name="${esc(d)}">${d.toLowerCase().endsWith('.pdf') ? 'PDF' : 'Word'}</button>`).join(' ')}
+      <button class="btn small" data-act="open-issued" data-file="${esc(r.file)}">View data</button></td></tr>`).join('');
+  return `
+    <div class="home-actions">
+      <button class="btn primary" data-act="new">+ New report</button>
+      <button class="btn" data-act="refresh">Refresh</button>
+      <span class="hint">Reports folder: ${esc(S.root || '')}</span>
+      ${S.mode === 'folder' ? `<button class="btn small" data-act="disconnect-folder">Disconnect folder</button>` : ''}
+    </div>
+    <div class="card"><div class="head">In progress</div><div class="body scroll">
+      ${rows ? `<table class="grid list"><tr><th>Report No.</th><th>Title</th><th>WBS</th><th>Inspector</th><th>Phase</th><th>Last saved</th></tr>${rows}</table>` : '<div class="empty">No reports in progress. Click "New report" to start one.</div>'}
+    </div></div>
+    <div class="card"><div class="head">Issued</div><div class="body scroll">
+      ${issued ? `<table class="grid list"><tr><th>Report No.</th><th>Title</th><th></th></tr>${issued}</table>` : '<div class="empty">Nothing issued yet.</div>'}
+    </div></div>`;
+}
+
+function homeFile() {
+  const drafts = (S.fileDrafts || []).map(d => `<tr><td><b>${esc(d.reportId)}</b></td><td>${esc(d.title)}</td>
+      <td class="hint">${esc(fmtWhen(d.savedAt))}</td>
+      <td><button class="btn small primary" data-act="resume" data-key="${esc(d.key)}">Resume</button>
+      <button class="btn small danger" data-act="discard" data-key="${esc(d.key)}">Discard</button></td></tr>`).join('');
+  const saved = S.savedFolder;
+  const officeCard = canPickFolder ? `
+    <div class="card"><div class="head">Office (PC)</div><div class="body">
+      <p style="margin-top:0">Pre-report, close-out and issue, working directly in the reports folder.</p>
+      <div class="row">
+        ${saved ? `<button class="btn primary" data-act="reconnect-folder">Open ${esc(saved.name)}</button>` : ''}
+        <button class="btn ${saved ? '' : 'primary'}" data-act="connect-folder">${saved ? 'Choose another folder' : 'Connect the reports folder'}</button>
+      </div>
+      <div class="hint" style="margin-top:6px">Pick the folder "006 - Field Reports" (OKO-QAQC library, synced to this PC by OneDrive).
+        The browser asks once per session to allow editing files there.</div>
+    </div></div>` : '';
+  return `${officeCard}
+    <div class="banner info">Field phase. Tap "Open report package", then Files &gt; OneDrive (side menu) &gt; Libraries &gt;
+      OKO-QAQC &gt; Documents &gt; 006 - Field Reports &gt; 01 - In Progress, and pick the report.</div>
+    <div class="home-actions"><button class="btn primary" data-act="open-zip">Open report package (.zip)</button></div>
+    <div class="card"><div class="head">Work on this device</div><div class="body scroll">
+      ${drafts ? `<table class="grid list"><tr><th>Report No.</th><th>Title</th><th>Last change</th><th></th></tr>${drafts}</table>` : '<div class="empty">No report open on this device.</div>'}
+    </div></div>`;
+}
+
+function stepper(ph) {
+  const i = PHASES.indexOf(ph);
+  return `<div class="stepper">${PHASES.map((p, k) => `<span class="${k < i ? 'done' : k === i ? 'now' : ''}">${k + 1}. ${PHASE_LABEL[p]}</span>`).join('')}</div>`;
+}
+
+function phaseBanner() {
+  const ph = S.report.phase;
+  if (S.readOnly || ph === 'issued') return `<div class="banner info">This report is issued. Read only.</div>`;
+  if (ownsPhase(ph)) {
+    const msg = { pre: 'Pre-report: register the reference documents, the parameters to verify and the area. Then move it to Field.',
+      field: 'Field: take the photos, write preliminary captions and findings, fill in the results. Save, then move it to Close-out.',
+      closeout: 'Close-out: review captions and findings, write the conclusion, preview the draft and issue the report.' }[ph];
+    return `<div class="banner info">${msg}</div>`;
+  }
+  const where = ph === 'field' ? 'on the tablet' : 'in the office (PC)';
+  return `<div class="banner warn">This report is in the ${PHASE_LABEL[ph]} phase, which is edited ${where}. It is read only here.</div>`;
+}
+
+function actionButtons() {
+  const ph = S.report.phase; const out = [];
+  // Word built in the browser (field_report.js): any phase, any device
+  const word = S.mode !== 'server' ? `<button class="btn" data-act="word-draft">Word draft (.docx)</button>` : '';
+  if (S.readOnly || ph === 'issued') return word;
+  if (word) out.push(word);
+  if (ownsPhase(ph)) out.push(`<button class="btn primary" data-act="save">Save</button>`);
+  if (S.mode === 'server') out.push(`<button class="btn" data-act="draft">Draft preview (Word)</button>`);
+  const prev = PHASES[PHASES.indexOf(ph) - 1];
+  const canBack = prev && (ownsPhase(ph) || (office() && ph === 'field'));
+  if (canBack) out.push(`<button class="btn" data-act="back">Return to ${PHASE_LABEL[prev]}</button>`);
+  if (ph === 'pre' && office()) out.push(`<button class="btn gold" data-act="next">Move to next phase (Field)</button>`);
+  if (ph === 'field') out.push(`<button class="btn gold" data-act="next">Move to next phase (Close-out)</button>`);
+  if (ph === 'closeout' && office()) out.push(`<button class="btn gold" data-act="issue">Issue report</button>`);
+  return out.join('');
+}
+
+function inp(path, { type, disabled, placeholder, num, rows } = {}) {
+  const v = getPath(S.report, path);
+  const dis = disabled ? 'disabled' : '';
+  if (type === 'textarea') return `<textarea data-path="${path}" rows="${rows || 2}" ${dis} placeholder="${esc(placeholder || '')}">${esc(v)}</textarea>`;
+  return `<input type="${type || 'text'}" data-path="${path}" ${num ? 'data-num="1" inputmode="decimal"' : ''} value="${esc(v)}" ${dis} placeholder="${esc(placeholder || '')}">`;
+}
+function sel(path, options, disabled) {
+  const v = getPath(S.report, path) || '';
+  return `<select data-path="${path}" ${disabled ? 'disabled' : ''}>${options.map(o => `<option ${o === v ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
+}
+function fld(label, path, opts = {}) {
+  return `<div><label class="f">${esc(label)}${opts.req ? ' <span class="req">*</span>' : ''}</label>${inp(path, opts)}</div>`;
+}
+function card(title, body, { open = true, locked = false } = {}) {
+  return `<details class="card" ${open ? 'open' : ''}><summary>${esc(title)}${locked ? '<span class="lock">read only in this phase</span>' : ''}</summary><div class="body">${body}</div></details>`;
+}
+
+function reportView() {
+  const r = S.report;
+  const fieldTablet = S.mode === 'file';
+  const parts = [];
+
+  // ---- General information ----
+  const eh = can('header');
+  parts.push(card('General information', `
+    <div class="grid2">
+      ${fld('Report title', 'header.title', { disabled: !eh, req: true })}
+      ${fld('Subject (short, shown in the page header)', 'header.subject', { disabled: !eh })}
+      ${fld('WBS', 'header.wbs', { disabled: !eh })}
+      ${fld('Location (title block)', 'header.location', { disabled: !eh })}
+      ${fld('Date of inspection', 'header.inspectionDate', { type: 'date', disabled: !can('inspDate') })}
+      ${fld('Inspector', 'header.inspector', { disabled: !eh, req: true })}
+      ${fld('Project', 'general.project', { disabled: !eh })}
+      ${fld('WBS / Area', 'general.wbsArea', { disabled: !eh })}
+      ${fld('System / Equipment No.', 'general.system', { disabled: !eh, type: 'textarea' })}
+      ${fld('Description', 'general.description', { disabled: !eh, type: 'textarea' })}
+      ${fld('Contractor', 'general.contractor', { disabled: !eh })}
+      ${fld('Drawing No./Rev. (reference documents)', 'general.drawings', { disabled: !eh, type: 'textarea' })}
+    </div>`, { open: !fieldTablet, locked: !eh }));
+
+  // ---- Models ----
+  const em = can('models');
+  const modelsHtml = S.models.length ? S.models.map(m => `<label class="row" style="margin:4px 0">
+      <input type="checkbox" data-act="toggle-model" data-id="${esc(m.id)}" ${r.models.includes(m.id) ? 'checked' : ''} ${em ? '' : 'disabled'}>
+      ${esc(m.name)}</label>`).join('') : `<div class="empty">${r.models.length ? esc(r.models.join(', ')) : 'No models.'}</div>`;
+  parts.push(card('Inspection models', `${modelsHtml}<div class="hint">Each model adds its parameters and its results table.</div>`, { open: em, locked: !em }));
+
+  // ---- Parameters ----
+  const ep = can('params'), eps = can('paramsStruct');
+  const prow = r.parameters.map((p, i) => `<tr>
+      <td>${eps && !p.model ? inp(`parameters.${i}.label`) : `<div class="ro">${esc(p.label)}</div>`}</td>
+      <td>${inp(`parameters.${i}.value`, { disabled: !ep })}</td>
+      <td class="act"><span class="badge ${p.phase === 'field' ? 'field' : 'pre'}">${p.phase === 'field' ? 'Field' : 'Pre-report'}</span>
+      ${eps && !p.model ? `<button class="btn small danger" data-act="row-del" data-path="parameters" data-i="${i}">Remove</button>` : ''}</td></tr>`).join('');
+  parts.push(card('Engineering / inspection data (parameters)', `
+    ${prow ? `<table class="grid params"><tr><th>Parameter</th><th>Value</th><th>Filled in</th></tr>${prow}</table>` : '<div class="empty">No parameters. Pick an inspection model or add one.</div>'}
+    ${eps ? `<div class="row" style="margin-top:8px"><button class="btn small" data-act="param-add">+ Add parameter</button></div>` : ''}`, { locked: !ep }));
+
+  // ---- Scope ----
+  const es = can('scope');
+  parts.push(card('Inspection scope', tableEditor('scope', [
+    { key: 'item', label: 'Scope Item' }, { key: 'extent', label: 'Quantity / Extent' },
+    { key: 'drawingRef', label: 'Drawing Ref.' }, { key: 'notes', label: 'Notes', type: 'textarea' }], es, '+ Add scope item'),
+    { open: !fieldTablet, locked: !es }));
+
+  // ---- Results ----
+  const er = can('results'), ers = can('resultsStruct');
+  r.results.forEach((b, bi) => {
+    const cols = b.columns.map(c => ({ key: c.key, label: c.label, type: c.type === 'number' ? 'number' : c.type === 'result' ? 'select' : 'text',
+      options: c.type === 'result' ? [''].concat(c.options.map(o => o.value)) : null }));
+    parts.push(card(b.title || 'Results', `
+      ${ers ? `<div style="margin-bottom:8px"><label class="f">Section title</label>${inp(`results.${bi}.title`)}</div>` : ''}
+      ${tableEditor(`results.${bi}.rows`, cols, er, '+ Add row')}
+      ${b.totalRow ? '<div class="hint">The Total row is calculated in the report.</div>' : ''}`, { locked: !er }));
+  });
+
+  // ---- Findings ----
+  const ef = can('findings');
+  const frec = (r.fieldRecord && r.fieldRecord.findings) || [];
+  const showField = r.phase !== 'field' && frec.length;
+  parts.push(card('Findings', tableEditor('findings', [
+    { key: 'location', label: 'Location / Ref.', type: 'textarea' }, { key: 'finding', label: 'Finding', type: 'textarea' },
+    { key: 'recommendation', label: 'Recommendation', type: 'textarea' }, { key: 'status', label: 'Status', type: 'select', options: STATUS_OPTIONS }],
+    ef, '+ Add finding', (row) => {
+      if (!showField) return '';
+      const f = frec.find(x => x.id === row.id);
+      return f ? `Field record: ${[f.location, f.finding, f.recommendation].filter(Boolean).join(' | ')}` : 'Added after the field phase.';
+    }), { locked: !ef }));
+
+  // ---- Drawings ----
+  const ed = can('drawings');
+  const dr = r.drawings.map((d, i) => `<div class="block drawing">
+      <img src="${esc(assetUrl(d.file))}" alt="">
+      <label class="f">Caption</label>${inp(`drawings.${i}.caption`, { type: 'textarea', disabled: !ed })}
+      ${ed ? `<div class="row" style="margin-top:6px">${moveBtns('drawings', i, r.drawings.length)}
+        <button class="btn small danger" data-act="img-del" data-path="drawings" data-i="${i}">Remove</button></div>` : ''}</div>`).join('');
+  parts.push(card('Drawings (prints, reference only)', `${dr || '<div class="empty">No drawings.</div>'}
+    ${ed ? `<button class="btn small" data-act="img-add" data-path="drawings">+ Add drawing print</button>` : ''}`, { open: !fieldTablet || r.drawings.length > 0, locked: !ed }));
+
+  // ---- Photos ----
+  const eph = can('photos'), eadd = can('photosAdd'), erep = can('photoReplace');
+  const prec = (r.fieldRecord && r.fieldRecord.photos) || [];
+  const phs = r.photos.map((p, i) => {
+    const fr = r.phase !== 'field' && prec.find(x => x.id === p.id);
+    return `<div class="ph"><img src="${esc(assetUrl(p.file))}" alt=""><div class="n">Photo ${i + 1}</div>
+      ${inp(`photos.${i}.caption`, { type: 'textarea', disabled: !eph, placeholder: 'Caption' })}
+      ${fr && fr.caption !== p.caption ? `<div class="fieldcap">Field: ${esc(fr.caption || '(no caption)')}</div>` : ''}
+      ${eph ? `<div class="row">${moveBtns('photos', i, r.photos.length)}
+        ${erep ? `<button class="btn small" data-act="photo-replace" data-i="${i}">Replace</button>` : ''}
+        <button class="btn small danger" data-act="img-del" data-path="photos" data-i="${i}">Remove</button></div>` : ''}</div>`;
+  }).join('');
+  parts.push(card(`Pictures (${r.photos.length})`, `
+    ${phs ? `<div class="photos">${phs}</div>` : '<div class="empty">No photos yet.</div>'}
+    ${eadd ? `<div class="row" style="margin-top:10px"><button class="btn gold" data-act="photo-take">Take photo</button>
+      <button class="btn" data-act="photo-add">Add from gallery</button></div>` : ''}`, { locked: !eph }));
+
+  // ---- Conclusion ----
+  if (r.phase === 'closeout' || r.phase === 'issued' || r.conclusion) {
+    const ec = can('conclusion');
+    parts.push(card('Conclusion', inp('conclusion', { type: 'textarea', rows: 5, disabled: !ec }), { locked: !ec }));
+  }
+
+  // ---- Annexes ----
+  const ea = can('annexes');
+  parts.push(card(`Annexes (${r.annexes.length})`, annexesEditor(ea), { open: !fieldTablet && r.annexes.length > 0, locked: !ea }));
+
+  // ---- History ----
+  parts.push(card('Phase history', `<table class="grid"><tr><th>Phase</th><th>When</th><th>By</th><th>Reason</th></tr>${
+    r.phaseHistory.map(h => `<tr><td class="ro">${badge(h.to)}</td><td class="ro">${esc(fmtWhen(h.at))}</td><td class="ro">${esc(h.by)}</td><td class="ro">${esc(h.reason)}</td></tr>`).join('')
+  }</table>`, { open: false }));
+
+  return `
+    <div class="bar">
+      <button class="btn small" data-act="home">&larr; ${office() ? 'All reports' : 'Close'}</button>
+      <div><div class="id">${esc(r.reportId)}</div><div class="title">${esc(r.header.title)}</div></div>
+      ${stepper(r.phase)}
+      <span id="saveStatus" class="status ${S.dirty ? 'dirty' : ''}">${S.dirty ? 'Unsaved changes' : `Saved, revision ${esc(r.revision)}`}</span>
+      <span class="spacer" style="flex:1"></span>
+      <div class="row">${actionButtons()}</div>
+    </div>
+    ${phaseBanner()}
+    ${parts.join('')}`;
+}
+
+function moveBtns(path, i, n) {
+  return `<button class="btn small" data-act="move" data-path="${path}" data-i="${i}" data-d="-1" ${i === 0 ? 'disabled' : ''}>Up</button>
+    <button class="btn small" data-act="move" data-path="${path}" data-i="${i}" data-d="1" ${i === n - 1 ? 'disabled' : ''}>Down</button>`;
+}
+
+function tableEditor(path, cols, editable, addLabel, noteFor) {
+  const rows = getPath(S.report, path) || [];
+  const head = `<tr>${cols.map(c => `<th>${esc(c.label)}</th>`).join('')}${editable ? '<th></th>' : ''}</tr>`;
+  const body = rows.map((row, i) => {
+    const cells = cols.map(c => {
+      const p = `${path}.${i}.${c.key}`;
+      if (!editable) return `<td class="ro">${esc(row[c.key])}</td>`;
+      if (c.type === 'select') return `<td>${sel(p, c.options)}</td>`;
+      if (c.type === 'textarea') return `<td>${inp(p, { type: 'textarea' })}</td>`;
+      return `<td>${inp(p, { num: c.type === 'number', type: 'text' })}</td>`;
+    }).join('');
+    const note = noteFor ? noteFor(row) : '';
+    return `<tr>${cells}${editable ? `<td class="act"><button class="btn small danger" data-act="row-del" data-path="${path}" data-i="${i}">Remove</button></td>` : ''}</tr>
+      ${note ? `<tr class="note"><td colspan="${cols.length + (editable ? 1 : 0)}">${esc(note)}</td></tr>` : ''}`;
+  }).join('');
+  return `<div class="scroll">${rows.length ? `<table class="grid">${head}${body}</table>` : '<div class="empty">Nothing here yet.</div>'}</div>
+    ${editable ? `<div class="row" style="margin-top:8px"><button class="btn small" data-act="row-add" data-path="${path}" data-keys="${cols.map(c => c.key).join(',')}">${esc(addLabel)}</button></div>` : ''}`;
+}
+
+function annexesEditor(edit) {
+  const r = S.report;
+  const html = r.annexes.map((a, ai) => {
+    const blocks = a.blocks.map((b, bi) => {
+      const base = `annexes.${ai}.blocks.${bi}`;
+      let inner = '';
+      if (b.kind === 'image') {
+        inner = `<div class="drawing"><img src="${esc(assetUrl(b.file))}" alt=""></div><label class="f">Caption</label>${inp(`${base}.caption`, { type: 'textarea', disabled: !edit })}`;
+      } else if (b.kind === 'text') {
+        inner = inp(`${base}.text`, { type: 'textarea', rows: 4, disabled: !edit });
+      } else if (b.kind === 'table') {
+        const hl = new Set(b.highlightRows || []);
+        inner = `<label class="f">Table heading (optional)</label>${inp(`${base}.heading`, { disabled: !edit })}
+          <div class="scroll" style="margin-top:6px"><table class="grid">
+          <tr>${b.columns.map((c, ci) => `<th>${edit ? inp(`${base}.columns.${ci}`) : esc(c)}</th>`).join('')}${edit ? '<th>Highlight</th><th></th>' : ''}</tr>
+          ${b.rows.map((row, ri) => `<tr>${row.map((v, ci) => `<td>${edit ? inp(`${base}.rows.${ri}.${ci}`) : esc(v)}</td>`).join('')}
+            ${edit ? `<td class="act"><input type="checkbox" data-act="annex-hl" data-path="${base}" data-i="${ri}" ${hl.has(ri) ? 'checked' : ''}></td>
+            <td class="act"><button class="btn small danger" data-act="annex-row-del" data-path="${base}" data-i="${ri}">Remove</button></td>` : ''}</tr>`).join('')}
+          </table></div>
+          ${edit ? `<div class="row" style="margin-top:6px"><button class="btn small" data-act="annex-row-add" data-path="${base}">+ Row</button>
+            <button class="btn small" data-act="annex-col-add" data-path="${base}">+ Column</button>
+            <button class="btn small" data-act="annex-col-del" data-path="${base}" ${b.columns.length < 2 ? 'disabled' : ''}>- Last column</button></div>` : ''}`;
+      }
+      return `<div class="block"><div class="kind">${esc(b.kind)}</div>${inner}
+        ${edit ? `<div class="row" style="margin-top:6px"><button class="btn small danger" data-act="block-del" data-path="annexes.${ai}.blocks" data-i="${bi}">Remove ${esc(b.kind)}</button></div>` : ''}</div>`;
+    }).join('');
+    return `<div class="block" style="border-style:solid">
+      <div class="kind">Annex ${ai + 1}</div><label class="f">Annex title</label>${inp(`annexes.${ai}.title`, { disabled: !edit })}
+      ${blocks}
+      ${edit ? `<div class="row" style="margin-top:8px">
+        <button class="btn small" data-act="block-add" data-kind="image" data-ai="${ai}">+ Image (print)</button>
+        <button class="btn small" data-act="block-add" data-kind="table" data-ai="${ai}">+ Table</button>
+        <button class="btn small" data-act="block-add" data-kind="text" data-ai="${ai}">+ Text</button>
+        <button class="btn small danger" data-act="annex-del" data-i="${ai}">Remove annex</button></div>` : ''}</div>`;
+  }).join('');
+  return `${html || '<div class="empty">No annexes. They are optional.</div>'}
+    ${edit ? `<button class="btn small" data-act="annex-add">+ Add annex</button>` : ''}`;
+}
+
+// ---------------------------------------------------------------------------
+//  Loading reports
+// ---------------------------------------------------------------------------
+async function loadList() {
+  S.list = await api('GET', '/api/reports');
+}
+
+function resetReportState() {
+  for (const a of Object.values(S.assets)) if ((a.blob || a.src) && a.url) URL.revokeObjectURL(a.url);
+  S.assets = {}; S.removed = new Set(); S.dirty = false;
+}
+
+// images of the package just loaded or saved (office modes)
+function setPackageAssets(res) {
+  for (const p of res.assets) {
+    const src = res.blobs && res.blobs[p];
+    S.assets[p] = src ? { src, url: URL.createObjectURL(src) } : { url: serverAssetUrl(p) };
+  }
+}
+
+function serverAssetUrl(path) {
+  return `/api/asset?file=${encodeURIComponent(S.file)}&path=${encodeURIComponent(path)}&t=${encodeURIComponent(S.token)}${S.issuedPkg ? '&issued=1' : ''}&v=${S.report.revision}`;
+}
+
+async function openServerReport(file, issued) {
+  const res = await api('GET', `/api/report?file=${encodeURIComponent(file)}${issued ? '&issued=1' : ''}`);
+  resetReportState();
+  S.report = res.report; S.file = res.file; S.readOnly = !!res.readOnly; S.issuedPkg = !!issued;
+  S.baseRevision = res.report.revision;
+  setPackageAssets(res);
+  if (!issued) {
+    const d = await getDraft(draftKey());
+    if (d && d.dirty && d.baseRevision === S.baseRevision && sameReport(d, S.report)) {
+      const ok = await confirmBox('Unsaved changes found', `This browser kept changes to this report from ${fmtWhen(d.savedAt)} that were never saved. Restore them?`, 'Restore');
+      if (ok) {
+        S.report = d.report; S.removed = new Set(d.removed || []); S.dirty = true;
+        for (const p of S.removed) delete S.assets[p];
+        for (const [p, blob] of Object.entries(d.assets || {})) S.assets[p] = { blob, url: URL.createObjectURL(blob) };
+      } else await dropDraft();
+    } else if (d) await dropDraft();
+  }
+  S.view = 'report'; render(); window.scrollTo(0, 0);
+}
+
+async function openZipFile(file) {
+  const files = await readZip(file);
+  if (!files['report.json']) throw new Error('report.json is missing: this is not a report package.');
+  const report = JSON.parse(new TextDecoder().decode(files['report.json']));
+  const key = `file:${report.reportId}`;
+  const d = await getDraft(key);
+  if (d && !sameReport(d, report)) {
+    const r = await modal({ title: 'Old work on this device',
+      html: `<p>This device keeps work from ${esc(fmtWhen(d.savedAt))} under the same number, ${esc(report.reportId)}, but it belongs to an older report that no longer exists. It will be discarded.</p>`,
+      buttons: [{ label: 'Cancel', value: 'no' }, { label: 'Discard and open', value: 'yes', primary: true }] });
+    if (r.button !== 'yes') return;
+    await dropDraft(key);
+  } else if (d && d.dirty && (d.baseRevision || 0) >= (report.revision || 0)) {
+    const r = await modal({ title: 'Work in progress on this device',
+      html: `<p>This device has unsaved work on ${esc(report.reportId)} from ${esc(fmtWhen(d.savedAt))}. Continue that work, or start again from the package you just opened?</p>`,
+      buttons: [{ label: 'Use the package', value: 'pkg' }, { label: 'Continue my work', value: 'draft', primary: true }] });
+    if (r.button === 'draft') return resumeDraft(d);
+  }
+  resetReportState();
+  S.report = report; S.file = null; S.readOnly = false; S.issuedPkg = false;
+  S.origName = file.name.replace(/( \(\d+\)| - rev\d+)+(?=\.zip$)/i, '');
+  S.baseRevision = report.revision;
+  for (const [name, data] of Object.entries(files)) {
+    if (name === 'report.json') continue;
+    const blob = new Blob([data], { type: 'image/jpeg' });
+    S.assets[name] = { blob, url: URL.createObjectURL(blob) };
+  }
+  S.view = 'report'; await saveDraft(); render(); window.scrollTo(0, 0);
+}
+
+function resumeDraft(d) {
+  resetReportState();
+  S.report = d.report; S.file = d.file; S.origName = d.origName; S.baseRevision = d.baseRevision;
+  S.readOnly = false; S.issuedPkg = false; S.dirty = !!d.dirty;
+  for (const [p, blob] of Object.entries(d.assets || {})) S.assets[p] = { blob, url: URL.createObjectURL(blob) };
+  S.view = 'report'; render(); window.scrollTo(0, 0);
+}
+
+async function goHome() {
+  if (S.dirty && office() && !await confirmBox('Unsaved changes', 'Leave without saving? The changes stay in this browser and are offered again when you reopen the report.', 'Leave')) return;
+  if (office()) { await loadList(); } else { S.fileDrafts = (await allDrafts() || []).filter(d => d.mode === 'file'); }
+  S.view = 'home'; S.report = null; render();
+}
+
+// ---------------------------------------------------------------------------
+//  Saving and phases
+// ---------------------------------------------------------------------------
+async function save() {
+  await askUser();
+  if (office()) {
+    const newAssets = {};
+    for (const [p, a] of Object.entries(S.assets)) if (a.blob) newAssets[p] = S.mode === 'server' ? await blobToB64(a.blob) : a.blob;
+    const res = await api('POST', '/api/save', { file: S.file, baseRevision: S.baseRevision, report: S.report, newAssets, removedAssets: [...S.removed], by: user() });
+    await dropDraft();
+    resetReportState();
+    S.report = res.report; S.file = res.file; S.baseRevision = res.report.revision;
+    setPackageAssets({ assets: collectRefs(S.report), blobs: res.blobs });
+    render(); toast(`Saved (revision ${S.report.revision})`);
+  } else {
+    S.report.revision = (S.baseRevision || 0) + 1;
+    S.report.lastSaved = { at: nowIso(), by: user(), device: 'tablet' };
+    const enc = new TextEncoder();
+    const entries = [{ name: 'report.json', data: enc.encode(JSON.stringify(S.report, null, 2)) }];
+    for (const p of collectRefs(S.report)) {
+      const a = S.assets[p]; if (!a || !a.blob) throw new Error(`Image missing from the report: ${p}`);
+      entries.push({ name: p, data: new Uint8Array(await a.blob.arrayBuffer()) });
+    }
+    // The OneDrive app refuses to upload over an existing name, so every save
+    // gets its own name ("... - rev5.zip"); the office app keeps the newest.
+    const base = (S.origName || `${S.report.reportId}.zip`).replace(/\.zip$/i, '');
+    const name = `${base} - rev${S.report.revision}.zip`;
+    const zip = makeZip(entries);
+    S.baseRevision = S.report.revision; S.dirty = false; await saveDraft(); render();
+    if (await sharePackage(zip, name)) return;
+    download(zip, name);
+    await modal({ title: 'Package saved', html: `<p>The file <b>${esc(name)}</b> was saved to Downloads.</p>
+      <p>Now upload it with the OneDrive app to <b>OKO-QAQC &gt; 006 - Field Reports &gt; 01 - In Progress</b>.
+      It has a new name, so nothing is overwritten: the office app keeps the newest revision automatically.</p>
+      <p class="hint">Your work also stays on this device until you discard it.</p>` });
+  }
+}
+
+// Straight from the app to SharePoint/OneDrive through the Android share menu,
+// where the browser allows sharing this kind of file. False: use Downloads.
+async function sharePackage(blob, name) {
+  const file = new File([blob], name, { type: 'application/zip' });
+  try { if (!navigator.canShare || !navigator.canShare({ files: [file] })) return false; } catch (e) { return false; }
+  for (;;) {
+    const r = await modal({ title: 'Package ready', html: `<p><b>${esc(name)}</b></p>
+      <p>Tap <b>Send</b>, choose <b>SharePoint</b> (or OneDrive), then <b>OKO-QAQC &gt; Documents &gt; 006 - Field Reports &gt; 01 - In Progress</b>.</p>
+      <p class="hint">It has a new name, so nothing is overwritten: the office app keeps the newest revision. Your work also stays on this device until you discard it.</p>`,
+      buttons: [{ label: 'Save to Downloads instead', value: 'dl' }, { label: 'Send', value: 'send', primary: true }] });
+    if (r.button !== 'send') return false;
+    try { await navigator.share({ files: [file], title: name }); toast('Sent. Check that it reached 01 - In Progress.', 4000); return true; }
+    catch (e) { if (e.name !== 'AbortError') { await alertBox('Could not send', `${e.message || e}. The package goes to Downloads instead.`); return false; } }
+  }
+}
+
+function collectRefs(r) {
+  const out = [];
+  r.photos.forEach(p => out.push(p.file)); r.drawings.forEach(d => out.push(d.file));
+  r.annexes.forEach(a => a.blocks.forEach(b => { if (b.kind === 'image') out.push(b.file); }));
+  return out;
+}
+
+function freezeFieldRecord() {
+  // Option B: the field text is kept as first written. Items already frozen
+  // (an earlier pass through Field) are never overwritten.
+  const r = S.report; const rec = r.fieldRecord || { frozenAt: nowIso(), photos: [], findings: [] };
+  for (const p of r.photos) if (!rec.photos.some(x => x.id === p.id)) rec.photos.push({ id: p.id, caption: p.caption || '' });
+  for (const f of r.findings) if (!rec.findings.some(x => x.id === f.id)) rec.findings.push(clone(f));
+  rec.frozenAt = rec.frozenAt || nowIso();
+  r.fieldRecord = rec;
+}
+
+async function moveNext() {
+  const r = S.report, ph = r.phase;
+  const to = PHASES[PHASES.indexOf(ph) + 1];
+  const missing = [];
+  if (ph === 'pre') { if (!r.header.title) missing.push('Report title'); if (!r.header.inspector) missing.push('Inspector'); }
+  if (ph === 'field' && !r.header.inspectionDate) missing.push('Date of inspection');
+  if (missing.length) return alertBox('Missing information', 'Fill in: ' + missing.join(', '));
+  let text = `Move ${r.reportId} to ${PHASE_LABEL[to]}?`;
+  if (ph === 'pre') text += ' From then on it is edited on the tablet.';
+  if (ph === 'field') text += ` The field captions and findings will be kept as a record.${r.photos.length ? '' : ' Warning: there are no photos.'}`;
+  if (ph === 'field' && office()) text += ' Normally this is done on the tablet: make sure the latest field package was uploaded.';
+  if (!await confirmBox('Move to next phase', text, `Move to ${PHASE_LABEL[to]}`)) return;
+  await askUser();
+  if (ph === 'field') freezeFieldRecord();
+  r.phaseHistory.push({ to, at: nowIso(), by: user(), reason: '' });
+  r.phase = to; S.dirty = true;
+  await save();
+}
+
+async function moveBack() {
+  const r = S.report; const to = PHASES[PHASES.indexOf(r.phase) - 1];
+  const res = await modal({ title: `Return to ${PHASE_LABEL[to]}`, html: `<div class="field"><label class="f">Reason (required, kept in the report history)</label><textarea name="reason" rows="3"></textarea></div>`,
+    buttons: [{ label: 'Cancel', value: 'no' }, { label: `Return to ${PHASE_LABEL[to]}`, value: 'yes', primary: true }] });
+  if (res.button !== 'yes') return;
+  if (!res.values.reason) return alertBox('Reason required', 'Write why the report goes back.');
+  await askUser();
+  r.phaseHistory.push({ to, at: nowIso(), by: user(), reason: res.values.reason });
+  r.phase = to; S.dirty = true;
+  await save();
+}
+
+async function issueReport() {
+  if (!(S.report.conclusion || '').trim()) return alertBox('Conclusion missing', 'Write the conclusion before issuing.');
+  const folder = S.mode === 'folder';
+  if (!await confirmBox('Issue report', `Issue ${S.report.reportId}? The ${folder ? 'Word file goes' : 'Word and PDF files go'} to 02 - Issued and the report becomes read only.`, 'Issue')) return;
+  if (S.dirty) await save();
+  toast(folder ? 'Issuing, building the Word file...' : 'Issuing, Word is creating the PDF...', 6000);
+  const res = await api('POST', '/api/issue', { file: S.file, baseRevision: S.baseRevision, by: await askUser() });
+  await dropDraft(); S.dirty = false;
+  if (folder) {
+    // the browser cannot drive Word, so the PDF is the one manual step left
+    await modal({ title: 'Report issued', html: `<p>${esc(res.docx)}</p>
+      <p>Saved in <b>02 - Issued</b>. Last step, the PDF: open that folder in File Explorer, open the Word file,
+      then File &gt; Save As &gt; PDF in the same folder. Then sign the PDF.</p>` });
+    return goHome();
+  }
+  const pdfName = res.pdf.split(/[\\/]/).pop(), docName = res.docx.split(/[\\/]/).pop();
+  const r = await modal({ title: 'Report issued', html: `<p>${esc(docName)}<br>${esc(pdfName)}</p><p class="hint">Saved in 02 - Issued. Sign the PDF.</p>`,
+    buttons: [{ label: 'Open Word', value: 'docx' }, { label: 'Open PDF', value: 'pdf', primary: true }, { label: 'Close', value: 'close' }] });
+  if (r.button === 'pdf') await api('POST', '/api/open', { name: pdfName });
+  if (r.button === 'docx') await api('POST', '/api/open', { name: docName });
+  S.dirty = false; await goHome();
+}
+
+// ---------------------------------------------------------------------------
+//  Events
+// ---------------------------------------------------------------------------
+app.addEventListener('input', (e) => {
+  const el = e.target; const path = el.dataset.path;
+  if (!path || !S.report) return;
+  let v = el.value;
+  if (el.dataset.num) v = v.trim() === '' ? '' : (isNaN(Number(v)) ? v : Number(v));
+  setPath(S.report, path, v); markDirty();
+});
+
+const ACTIONS = {
+  async 'set-user'() { await askUser(true); },
+  async refresh() { await loadList(); render(); },
+  async home() { await goHome(); },
+  async open(el) { await openServerReport(el.dataset.file, false); },
+  async 'open-issued'(el) { await openServerReport(el.dataset.file, true); },
+  async 'open-doc'(el) {
+    if (S.mode === 'folder') await openIssuedDoc(el.dataset.name);
+    else await api('POST', '/api/open', { name: el.dataset.name });
+  },
+  async 'connect-folder'() {
+    let handle;
+    try { handle = await window.showDirectoryPicker({ id: 'fieldReports', mode: 'readwrite' }); } catch (e) { if (e.name === 'AbortError') return; throw e; }
+    await connectFolder(handle);
+  },
+  async 'reconnect-folder'() { await connectFolder(S.savedFolder); },
+  async 'disconnect-folder'() {
+    if (!await confirmBox('Disconnect folder', 'Stop working in the reports folder on this PC? You can connect it again at any time.', 'Disconnect')) return;
+    await setSetting('folder', null); ROOT = null; S.savedFolder = null; S.mode = 'file'; S.models = []; await goHome();
+  },
+  async new() {
+    const r = await modal({ title: 'New report', html: `
+      <div class="field"><label class="f">Report title *</label><input type="text" name="title" placeholder="e.g. Bolt Torque Verification Inspection Report"></div>
+      <div class="field"><label class="f">Subject (short, for the page header)</label><input type="text" name="subject" placeholder="e.g. Compressor Room Access Landing"></div>
+      <div class="field"><label class="f">WBS</label><input type="text" name="wbs" placeholder="e.g. 211"></div>
+      <div class="field"><label class="f">Inspector *</label><input type="text" name="inspector" value="${esc(user())}"></div>
+      <p class="hint">The report number is assigned automatically.</p>`,
+      buttons: [{ label: 'Cancel', value: 'no' }, { label: 'Create', value: 'yes', primary: true }] });
+    if (r.button !== 'yes') return;
+    if (!r.values.title || !r.values.inspector) return alertBox('Missing information', 'Title and Inspector are required.');
+    const res = await api('POST', '/api/new', { header: r.values, by: await askUser() });
+    toast(`${res.report.reportId} created`);
+    await openServerReport(res.file, false);
+  },
+  async 'open-zip'() {
+    const [f] = await pickFiles({ accept: '.zip,application/zip' });
+    if (f) { await openZipFile(f); await confirmUser(); }
+  },
+  async resume(el) { const d = await getDraft(el.dataset.key); if (d) { resumeDraft(d); await confirmUser(); } },
+  async discard(el) {
+    if (!await confirmBox('Discard', 'Discard the work kept on this device for this report? Anything not uploaded is lost.', 'Discard')) return;
+    await dropDraft(el.dataset.key); await goHome();
+  },
+  async save() { await save(); },
+  async draft() {
+    if (S.dirty && ownsPhase(S.report.phase)) await save();
+    toast('Opening the draft in Word...', 4000);
+    await api('POST', '/api/draft', { file: S.file });
+  },
+  async 'word-draft'() { await wordDraft(); },
+  async next() { await moveNext(); },
+  async back() { await moveBack(); },
+  async issue() { await issueReport(); },
+
+  async 'toggle-model'(el) {
+    const r = S.report, id = el.dataset.id, m = S.models.find(x => x.id === id);
+    if (el.checked) {
+      r.models.push(id);
+      for (const p of m.parameters) if (!r.parameters.some(x => x.label === p.label)) r.parameters.push({ label: p.label, value: '', phase: p.phase, model: id });
+      r.results.push({ modelId: id, title: m.results.title, totalRow: !!m.results.totalRow, columns: clone(m.results.columns), rows: [] });
+    } else {
+      const block = r.results.find(b => b.modelId === id);
+      const hasData = (block && block.rows.length) || r.parameters.some(p => p.model === id && p.value);
+      if (hasData && !await confirmBox('Remove model', `Remove "${m.name}"? Its parameters and results rows will be deleted.`, 'Remove')) { el.checked = true; return; }
+      r.models = r.models.filter(x => x !== id);
+      r.parameters = r.parameters.filter(p => p.model !== id);
+      r.results = r.results.filter(b => b.modelId !== id);
+    }
+    markDirty(); render();
+  },
+  'param-add'() { S.report.parameters.push({ label: '', value: '', phase: 'pre' }); markDirty(); render(); },
+  'row-add'(el) {
+    const arr = getPath(S.report, el.dataset.path); const row = {};
+    el.dataset.keys.split(',').forEach(k => { row[k] = ''; });
+    if (el.dataset.path === 'findings') row.id = arr.reduce((m, f) => Math.max(m, f.id || 0), 0) + 1;
+    arr.push(row); markDirty(); render();
+  },
+  'row-del'(el) { getPath(S.report, el.dataset.path).splice(+el.dataset.i, 1); markDirty(); render(); },
+  move(el) {
+    const arr = getPath(S.report, el.dataset.path), i = +el.dataset.i, j = i + (+el.dataset.d);
+    if (j < 0 || j >= arr.length) return; [arr[i], arr[j]] = [arr[j], arr[i]]; markDirty(); render();
+  },
+  async 'img-add'(el) {
+    const files = await pickFiles({ accept: 'image/*', multiple: true });
+    for (const p of await addImages(files, 'drawings')) getPath(S.report, el.dataset.path).push({ file: p, caption: '' });
+    markDirty(); render();
+  },
+  async 'img-del'(el) {
+    if (!await confirmBox('Remove image', 'Remove this image from the report?', 'Remove')) return;
+    const arr = getPath(S.report, el.dataset.path); const [item] = arr.splice(+el.dataset.i, 1);
+    dropAsset(item.file); markDirty(); render();
+  },
+  async 'photo-take'() { await addPhotos(await pickFiles({ accept: 'image/*', capture: true })); },
+  async 'photo-add'() { await addPhotos(await pickFiles({ accept: 'image/*', multiple: true })); },
+  async 'photo-replace'(el) {
+    const files = await pickFiles({ accept: 'image/*' }); if (!files.length) return;
+    const [p] = await addImages(files, 'photos'); if (!p) return;
+    const ph = S.report.photos[+el.dataset.i]; dropAsset(ph.file); ph.file = p; markDirty(); render();
+  },
+  'annex-add'() { S.report.annexes.push({ title: '', blocks: [] }); markDirty(); render(); },
+  async 'annex-del'(el) {
+    if (!await confirmBox('Remove annex', 'Remove this annex and everything in it?', 'Remove')) return;
+    const [a] = S.report.annexes.splice(+el.dataset.i, 1);
+    a.blocks.forEach(b => { if (b.kind === 'image') dropAsset(b.file); }); markDirty(); render();
+  },
+  async 'block-add'(el) {
+    const blocks = S.report.annexes[+el.dataset.ai].blocks, kind = el.dataset.kind;
+    if (kind === 'image') {
+      for (const p of await addImages(await pickFiles({ accept: 'image/*', multiple: true }), 'annex')) blocks.push({ kind: 'image', file: p, caption: '' });
+    } else if (kind === 'table') blocks.push({ kind: 'table', heading: '', columns: ['Column 1', 'Column 2'], rows: [['', '']], highlightRows: [] });
+    else blocks.push({ kind: 'text', text: '' });
+    markDirty(); render();
+  },
+  async 'block-del'(el) {
+    if (!await confirmBox('Remove', 'Remove this part of the annex?', 'Remove')) return;
+    const [b] = getPath(S.report, el.dataset.path).splice(+el.dataset.i, 1);
+    if (b.kind === 'image') dropAsset(b.file); markDirty(); render();
+  },
+  'annex-row-add'(el) { const b = getPath(S.report, el.dataset.path); b.rows.push(b.columns.map(() => '')); markDirty(); render(); },
+  'annex-row-del'(el) {
+    const b = getPath(S.report, el.dataset.path), i = +el.dataset.i; b.rows.splice(i, 1);
+    b.highlightRows = (b.highlightRows || []).filter(x => x !== i).map(x => (x > i ? x - 1 : x)); markDirty(); render();
+  },
+  'annex-col-add'(el) { const b = getPath(S.report, el.dataset.path); b.columns.push(`Column ${b.columns.length + 1}`); b.rows.forEach(r => r.push('')); markDirty(); render(); },
+  'annex-col-del'(el) { const b = getPath(S.report, el.dataset.path); if (b.columns.length < 2) return; b.columns.pop(); b.rows.forEach(r => r.pop()); markDirty(); render(); },
+  'annex-hl'(el) {
+    const b = getPath(S.report, el.dataset.path), i = +el.dataset.i; const s = new Set(b.highlightRows || []);
+    if (el.checked) s.add(i); else s.delete(i); b.highlightRows = [...s].sort((x, y) => x - y); markDirty();
+  }
+};
+
+// ---------------------------------------------------------------------------
+//  Word report in the browser (field_report.js + the "docx" library)
+// ---------------------------------------------------------------------------
+const DOCX_LIB_URL = 'https://cdn.jsdelivr.net/npm/docx@9.5.1/dist/index.iife.js';
+const GMIN_LOGO_B64 = 'iVBORw0KGgoAAAANSUhEUgAAAxgAAAFhCAYAAADzzwxEAAAACXBIWXMAAAsSAAALEgHS3X78AAAgAElEQVR4nO3d3XHjxrq24ce71rnmS4AiEsBoB8ASHcHIEYhzzqqhIxhMBOZU4dxQBEuKwFQhAFNMABQT2GIE8x100yPPSCIINNAN4L6qVF7LJsGW+IcH3e/bv3z79k0AAAAA4ML/+B4AAAAAgP4gYAAAAABwhoABAAAAwBkCBgAAAABnCBgAAAAAnCFgAAAAAHCGgAEAAADAGQIGAAAAAGcIGAAAAACcIWAAAAAAcIaAAQAAAMAZAgYAAAAAZwgYAAAAAJwhYAAAAABwhoABAAAAwBkCBgAAAABnCBgAAAAAnCFgAAAAAHCGgAEAAADAGQIGAAAAAGcIGAAAAACcIWAAAAAAcIaAAQAAAMAZAgYAAAAAZwgYAAAAAJwhYAAAAABwhoABAAAAwBkCBgAAAABnCBgAAAAAnCFgAAAAAHCGgAEAAADAGQIGAAAAAGcIGAAAAACcIWAAAAAAcIaAAQAAAMAZAgYAAAAAZwgYAAAAAJwhYAAAAABwhoABAAAAwBkCBgAAAABnCBgAAAAAnCFgAAAAAHCGgAEAAADAGQIGAAAAAGf+43sAQBV5Go8ljSVNn/3rw/9+krT+4X+vJ/PNUzujAwAAGK5fvn375nsMwFF5Gl/IBIgrSReSzioc5lHSyv7cEjgAAADcI2AgWHkav5M0k7SQdN7AQ9zJBI2sgWMDAAAMEgEDwbHLnxJJ1y095F7SUtKSWQ0AAIB6CBgIhp2xWKq9YPGjvaRkMt8sPT0+AABA5xEwEIQ8jROZpVBVaitce5Q0m8w3K98DAQAA6BoCBrzK03gqKVMzNRZ13csEja3vgQAAAHQFAQNe2DqLTNKl35GU8kXUZwAAAJRCwECrbJ1FIumT56Gcai9pQccpAACAtxEw0Jo8jRcy4SKEOouqHmSCxsr3QAAAAEJEwEDjbJ3FUtJ7z0Nx6U4maGx9DwQAACAkBAw0xtZZLCV98DyUprB/BgAAwA8IGHDO1lksJH32PZaWPMrsn5H5HggAAIBvBAw4lafxTOaqfpfrLKq6lwkaK98DAQAA8IWAASdsnUWibrSdbdqNTH0Gy6YAAMDgEDBQi62zSCRd+x1JcPYytRmJ74EAAAC0iYCByvI0TmRqLYa4HKqsR5nZjFvfAwEAAGgDAQMny9P4SqbO4tz3WDrkXtKMtrYAAKDvCBgoLU/jC5lgQZ1FdV9lCsGpzwAAAL1EwMBRtu3sUtRZuLKXCRlL3wMBAABwjYCBN+VpvJAp4qbOwr1HmWVTK98DAQAAcIWAgRfZtrOZqLNow51MIfjW90AAAADqImDgX2zb2UzUWfjwRaa1LfUZAACgswgYkPRPnUUi6ZPnoQzdXmY2I/M9EAAAgCoIGFCexjOZIm7qLMLxIBM0Vr4HAgAAcAoCxoDZOoulpPeeh4LX3ch0nNr6HggAAEAZBIwBsnUWS0kfPA8F5exlni/qMwAAQPAIGANi6ywWkj77HgsqeZSZzch8DwQAAOA1BIyBsHUWiWg72wf3MvUZa98DAQAA+BEBo+dsnUUi2s720Y1M0GDZFAAACAYBo6fscqilpGvfY0Gj9jK1GYnvgQAAAEgEjF7K0ziRqbWg7exwPEqa0dYWAAD4RsDokTyNr2RmLaizGK57maCx9T0QAAAwTASMHsjT+EImWFBngYOvMh2nqM8AAACtImB0mK2zSCR98jwUhGkvEzKWvgcCAACGg4DRUXkaL2TCBXUWOOZBptvUyvdAAABA/xEwOsa2nc1EnQVOdycTNLa+BwIAAPqLgNEReRqPZYIFdRao64tMa1vqMwAAgHMEjMDZOouFpM++x4Je2cvMZmS+BwIAAPqFgBGwPI1nMt2hqLNAU+5lCsFXvgcCAAD6gYARIFtnsZT03vNQMBw3MkFj63sgAACg2wgYAbF1Fomka78jwUDtZWozEt8DAQAA3UXACMCzOouFWA4F/x5l6jNufQ8EAAB0DwHDM1tnkYi2swjPvUzQWPseCAAA6A4Chid5Gl/I1FnQdhahu5EJGrS1BQAARxEwWmaXQy1FnQW6ZS9TBL70PRAAABA2AkaL8jRORJ0Fuu1R0oy2tgAA4DUEjBbkaXwlM2tBnQX64l4maGx9DwQAAISFgNEg23Y2E3UW6K+vMkunqM8AAACSCBiNsHUWiaRPnocCtGEvUwSe+R4IAADwj4DhWJ7GC5lwQZ0FhuZBJmisfA8EAAD4Q8BwJE/jqcxyKOosMHR3MkFj63sgAACgfQSMmmydxVLSB89DAUKyl3lfLKnPAABgWAgYFdk6i4Wkz77HAgTsUaYIPPM9EAAA0A4CRgW27Wwm6iyAsu5llk2tfQ8EAAA0i4BxAjtrkYnlUEBVv7MbOAAA/UbAKClP4wtJt6KIG6jrTmaTPmozAADoIQJGCSyJKuVB0lrSVtJKkvrertTOaF34HseJruyP76D8IOmKTlMAAPQPAeOIPI1nkv70PY4APcgEidu+B4k+ytM4kf8GBXtJU+oyAADoFwLGGwgXP3mQmcm55cpz9wXy+iZkAADQMwSMV9hlUf/1PY4A7GVCxZJQ0T95GmeSrj0P41HSBTUZAAD0AwHjBbage6Vh11w8yISKzPdA0By7UWThexwyr7cpIQMAgO77H98DCM2zVrRDDRf3kn6dzDcXhIv+s7NS977HIem9zM7fAACg4wgYP1vKnOwMzSFYTCnaHpxQ6h+u7dJEAADQYQSMZ/I0nsr/evS2PUr6jWAxaCEtS8rsLCIAAOio//geQGAy3wNo0V6mxiLxPRDgmTOZWcSZ53EAAICKmMGw7L4Avjcfa8u9TNeexPdAgBdc2+JzAADQQcxg6J/C7oXvcbRgL2k2mW9ufQ8EOCKTNPU8BgAAUAEzGMZC/e8adS9pTLhAR1wyiwEAQDcxg2HMfA+gYb9P5htagKJrEvX/vQkAQO8MPmDYtph9rb14lHQ1mW9CaUMKnOIqT+N3bL4HAMMURaMLSWNJF5Le2X/K/rtj5257fW/Dvn3+UxS7lctx4meDDxjq7xXSO5l6C07O0FVnkq7UQHe3KBrNVP69v5WUFMVu63ocXRFFo6nMUtKyLYQXRbGrfWEjikaHjU/LPK6Px5TMCUxSFLvOfdae8D5YF8XOSZ2iPWEsM6P+JGnm4u96wmMeZEWxy+o+rg9RNFrq+0n4W4L8HaNodCUz/qmky5qHO3t2jH8dK4pGkvQgaXX46eJ7OGS/fPv2zfcYvMrTuI9/gK+T+SaoonVbSF/mQw+ve2piNsp2UPvs+riO3E3mG6eb79mTqj9PvNte0niIX0A2XPx14t32kqZ1Tvjtif5K5Tc+9fGYBw/2sTvz+qjwPrgpit2s5mNeyPx9y9Y81v67VnjMg9q/b9uiaJTptL28PvoOGfY9d2V/Pvgci8yF2VtJt116L4dq0DMYPd01+ONkvsl8PfizIDG1/7xQf5egtS5P473MlbjlQGanmvjCmVW4zyD353h2Nf9Uh9mnOoH4Qqed6Pt4zIP3klZRNOpSyJidePvrKBplNZeWLHXaif57meekzmNenfiYB9dRNFLHQsapGwXP5Gn/L3vhYqawNjf+YH+WUTS61cBnrusaehepPl1R30v61Ue4yNN4nKfxIk/jlaT/k7na+VnmjUq4cOtM5m+7ztO4T6/fV+VpPPU9BuvafikOyUK8h8s6hAx2ou+PazsrAEeiaDSNotFK5jwhpHDx3JnM2IooGmVRNBp7Hk8nDT1gTH0PwJG9pOlkvlm1+aB5Gs9sqCgk/aH66yVR3rmkWztj1HdT3wN4JhvKCaRdWhLq0rlQHULGIML/QBAyHIii0cWzYNGlc4VD0EiG8tnvytADRpde5K85hItWOkXlafwuT+MkT+MnmfW7ffgbdtW5TCvXvgvpZO1cw9iUU/K0dKIHCBn9Q8ioKIpG72zh+d/q9vnCZ0lr3tflDTZg9OTKb2vh4hAsZDrqfFb/NybsipnvAbQgtPfq575/yUTRaKFqtQgwzkTI6BtCxons638t6ZPvsThyLulv+/mIIwYbMBTWVdEq2gwXCxEsQnUWUI1CU0K86pX5HkBT7HrjxPMw+oCQ0T+EjJJsl7K/1c8arj94HRw35IDRZa2EizyNL/I0XsvUVxAsgO/e9/gqVibe764QMvqHkHGEXRJ1aivwruF1cMSQA0ZXP/DbCheHNZMskwBelvStu4i96hjijFGXETL6h5PLV9i/S1+WRB3D6+ANQ94HI7R13WU1Gi5s69NMBIsumapen3hUcybzXpn6HYYbtkPKKbsdo7xDyKi1ESCC0sV9MhpVYaO/Uz3KLNde2f+/eu2G1oXMud6FpLGaOa+5jqLRuih2fHb+YMgBo4s+NhwuZjp9IyRgyC6jaHRVFLtb3wNxIBPv/SYRMvrn2s5MdWmDxUbY2U/X4WIvu7O2pFWFv/Hqx38RRaMrmYtCV3JXH/JHFI1WvK//bchLpLrmS5Ob6OVpnMmsmeQEAzhN5/fGsBsINrFrOv6N5VL9M/gNFu3r2WXNxZ2k34pi964odrOi2N26CnD2WIui2I0l/Sbp3sVx1ePGH1URMLrhbjLfJE0c2LafXSvcHTVx3Nb3AAbuTB1eWmRPjDLf4xgQQkb/DDZk2N/Z1QzunaSoKHatzArbsDGV9Kukh5qHe29ncWARMML3oIb2OsjTeCwzhUi9RbetfA8AurazAF2UqJ+tJENGyOifoYaMRPU/Px4l/WqDxbb2iE5UFLtVUewuJH2peajEwXB6g4ARtr2k2WS+cb620xZzr0W46Lr7yXyz9T0ISOrgUikbiobS8SU0hIz+GVTIsK/dup8fN5IuimK3qj+ieopil8jMZuwrHuKcWYzvCBhhWzRR1G3DxUrUW/RBX/di6KJzde/56OzSrp4gZPTPkEJG3c+PL7bGIpgCeRt0pqoeMq6cDabjCBjhumuiqJtw0SuNdhVDJZ+7crIYRaNEzGC6UPVE5ICQEZ66z2nvQ4ad/ayzZ87vdsYgOLYbVNWLRR/6/LyfgoARpr0aqLsgXPTGvaT/bbKrGGrJfA/gGLtB4Gff4+iJtaSPNY9ByAjLTGbpTh19DxmzGve9CX3fiKLYZZK+Vrz71N1Iuot9MMLkvO4iT+NDpxhf4eJBptsRV9yrW0taU3MRvPdRNFoE/gWa+R5AnxTFLouikVSvVSf7ZITjqSh2M/uc1umweAgZvdonw4amqn+Xhw5tTpio2n4ZF3LXWauzCBjhuZvMN05fmDZcrNTucohH2c1xJK2aKFQHApZE0ejWR0eUY6JotFC9pQ14geOQcRVC0evQETJeNfN031YVxe7JLiU99T09dT+a7mGJVFgaWRolU4jVRrjYy0wp/u9kvhlP5pvFZL65JVxggM4U4CyBXRqVeB5Gb9llFS6WS/1FN5ow2KvtLJf6t6qFzDddm52z7+nHE+/GOY+YwQhN0sDSqIWa30TvQdKSmgDgXy7tleiQpsqXogarUY5mMiTpzygaHU5w4BEzGT+pOgOauBxEiy5kPjvHJW77pA7N0jSJgBGOx8l843TNdp7GU0l/uDzmD+5lQtGqwccAQrBXtRPzLIpG4xBOKKJodCXpQ8W7P4rN+EojZPQPIcOosaHoXYhLRsuwz9XM9zi6hiVS4Zi5PJitu2jqyumjTIvUKeECA5FUvN+ZAthrwi7NyCre/aHGfQfLhoLfVL/l6Z8slwoDy6UkVa8vyByOAR1AwAjDfQMn6pmaWQrxVdIFy6EwMGtJXyre97rGVT9XElX/PJi5G8aw2OVxUxEyeoOQoUqtlANbKooWEDDCkLg8WJ7GdZZCvOZR0q+2cLuTU7tAHXZTqIeKd898nUzYcPOp4t2/dK0oMzT27zcVIaM3Bh4yqoz33vkoEDwChn9OZy+e7Xfh0p3MrMXK8XGBrqm6u+t5jftWVndpVKg77XYNIaN/HIaMdcc2WKxS4M1FigEiYPiXOD5eJrdLo75M5psrZi0Aye5NUHV3188eTiQWql6c3Xog6jNCRv/YkFH18+DgXP3fxX3rewBoHwHDL9ezF1O5XRr1cTLfJA6PhzCNfQ+gYxKd3hf9IHM3jLfZE5bPFe/+lY3e3CNk9E9R7BZys/dJn0MGMxgDRMDwKwv4eB8p5B6Mvn6pNaJmy8L3diftNmQV7/eo7varDx4ho38cbrDY55CBgWEfDH8eXZ7A52k8k7s+9YSLgbCzXm3s8t4rRbFbRdHoRtV64idRNLptsid8FI0SVX9eZ13t0d8VRbFb2+L7leotaWWfjEA42vvkEDKmNFeoxtadhRDStl3d98MVAoY/masD2cLuxNHhCBfDkvgeQIctJF3p9BPEM5n3/9TxeCRJUTQaq3r9xB1Lo9pByOgfQoZfNlysFMZFs/3Qn0OWSPmTOTxWnULO574QLoYjT+NM1TqCQLWXSl3anbWbkKnaCete7HnRKpZL9Q/LpbzKFEa4kL4/h2PfA/GFgOHH/WS+2To83szBMe4p6B6GPI3HeRqvVG15D56xm0fdVby7870x7Elm1dDI0igPCBn9Q8j4SVt7fYS2p8iZBtxEhSVSfmSuDuSo9mIvs9SjFXkaX8iskRy39ZiQZD58pwrnCk9fzGTaMFZZKrWUo1kDG1aWFe9+z067/tjlUheSblXv/clyqUCwXOpfDq9tDAgBww+Xb7TEwTFmTe9zYXcXP/y43KcD8Koodk+2qPqPCne/jqJR5qjuIRNLozqrKHbbZzUZhIwe6GnIeNDpr89xA+NA4Fgi1b57VyfztgNQ3dmLu8l808iVhTyN3+VpnORpvJX0X5klOYQL9E5R7JaS7ivevfZSKVvPUXUPnGTo3U5CYZeoTWVO4ur4M4pGWe0BobYeLpeqcv4ydT0IhI+A0T6XJ/MzB8dopCd/nsYLmWUjn+WufS4QspmqraM/V433oYOlUVXviwY4DBnXhIww9CxkrCrc57ylYmdqyAJCwGjfysVBbGvaukW6Xx0Xmx9mLVYyy0WYrcBg2FmApOLdP9c4cUhUPcS3tekfTkDI6B8bMn5TvWL+EELGtuL92qjznKn+ewaOUIPRrv1kvnG1htLFmzVxcIx/2OLtlQgWGKii2C1tJ58qa+gznbhBlF2z/6nCY0nSl0DWdOMFtrZnqvo1Gde2JmPmYlyorih2tw72PvFdk7GqeL+Fqs+0lvLsPdNEAFuo+jLUQSJgtGvl8Fh1A8aNy8JuwgXwj5mkvyvc730UjRYnLlmq+oX9UBS7pOJ90RJCRv842mDRW8iwzQgedfqs6XkUja6a7lZnZ/9WLo9pl3cRLk7EEql2rVwcxC6Pqvtid3YlgXABfGe/8L9UvHtSdq2y7VxV9aRzVvF+aBnLpfrH0d4nPpdLVQ0JXa33osVuBQSMdoWyPOrB1VItG3ZWIlwA/7CzA1VOCM9UYp8ce1LxucLxJekrS6O6hZDRP45DRmv7WFlZxfud2wsjnWHfL+wdVQEBo0WT+Wbl6FDTmvfPHIzh+bEIF8DPqhZQX5bYkbnqlcBHOa69QjsIGf3jMGT8t81d3O24HyvevU5Di1ZF0Wih+s10BouA0Z6qb8aXTGve38l0n908j3WJwAvs5nlfK959+dreGPZL77LicWf2RBUd5DJkqPprCA45ChlSvc38qkhq3Nd3J6yjbAivsnkqLAJGe7YuDpKn8Vj19pV4dNiatqvrKYG2JKp2ceHFpVK2PiOpOJYbRzuGw6Oi2D0Vxe5C0o3vscANhyGjNbbtbtULpyG0231RFI3eRdHoVsdnLmiHewQBoz0rR8ep+4Z0OXvBBnrAG+wV51nFu3+w3WaeW6raksS92POiV2xHKEJGT3QxZKjeLMYhZATzuWRrWbY6vjLjXmzqdxQBo3vqBgxXxZ0zR8cBes3OGlQ9EcwOS6Xsl1/VJYksjeohQka/dC1k2FmMOlfyzyT9EUWjVUs7fb8oikYXUTRaSfqvyl3AydTMXhu9QsBoz8rRcbwHDEdtcoEhWajaScO5TOvad6renOGu6d7z8IeQ0S9dCxlyc7HxUlIRRaOszWVTUTS6ssHib5WvSbq3wYrmNkcQMLrnxcLPshy1p227JR7QaTWXSn2SWdrI0ii8iJDRLzZkXKgD6/ztWH93dLhrSX9H0WgdRaNFE2HDzlYso2i0lZmxOLXZQfLC0lW8gJ28u6dO5w9Xnaymjo4TkkeZk7i16hfkv5Of6dPpkf/+TvTz9qYodrdRNLpTtdm/qu/7pCh224r3RYcUxW4WRSOJtpq9YHfMnqr+Lu6NK4rd0oYBV6+997IdnKJotJf5G6ztz5Ok9bEln3bW90Lfv4+n9p91Zh6+FsVuRcAoh4DRnhA2tto6Ok6f1h4+Skom803m+LhBLkmxXcgScRLiy0zmfdjG9Pp9Uezo9DYghIx+KYrdU1dChsxM6YXcj/NM5qLMvy7M2Nd5mx70vah92vaDdxFLpFoymW9qF1jak8MQhP5BV9aDpIsGwkWwJvPNdjLfzCR99D2WIbJX3ZIWHmovGjEMEsul+sXh3ieN6so4K9pLuqJRxmkIGN0yrnn/Vd0BBBRy6nqQNHUR/LrIhipX62ZxAjurcN/wwyxZGjVchIx+6crJ+7Nx3nkeikt7SdMfPk/HfobSLQQMnGrsewCOLIYaLg4m800bJ7p42UzNdYl5KIpd0tCx0RGEjH7pUsgoit2VpK++x+LAIVz8uMR97GEsnUPAwBA9Tuable9BBCLzPYAhslfDkoYOP2vouOgYGzK++B4H3OhKyJCkotgtJP2q7rTb/dFr4QIlETAwREEWYHuy8j2AobJLpVyfKHzhCxHP2dksaq56omMhYyVztb9rsxn3ksZvfJb2qdFNYwgYGKKt7wGEYjLfbH2PYeBmDo/1KImuUfiJ3RiMkNETHQsZT3Y2438V/pLcvaTfi2I3PVLQzSZ7JRAwWpKnMYk3HFzhRRDsFTJXS1hmdDnBawgZ/dKlkCGZz7qi2E1llk2FWBt0IzNrwUUaRwgY7am1A7cjhBwjhOcC/pwaMPdqcNbLLmGpe5Lw1S5HaEqVUF43yG91+vrtLj5ma2qGDBfvAx/vvaDe7y49CxlVZwZaf+0WxW5la4P+n0wnQ58BaS8TLKKi2J1ygabsmB/Uoc8H1wgY3VL3hcqJtUHQGjA7XV/2CtpLLQqbMFP1k4QbNby3RlHsbnXaielHe586j7mVOXkqe8Lv4zFv7OupM56FjMcT7ubkfeDjvXfia7et97szdgnSVKfXOXh97dpxL4tidyEpkgkbd2qnKPxO5jUxtsFie+L9pzoeMh5kXkuDnVX+5du3b77H4EWexomkzy0+5K8uOhflaVznCbufzDfTmo//TtL/1TlGAO4m882V70GEouZrqhWT+eYX32MAADQvikZjmQuBF/q+a/ZlxcM9yMxIrSWtGp7pxTP/8T0AtKr2lfvJfPOUp/Fe3S5y+pCn8buh74MBAEBo7IzCVi90fLThY1ziGCu3o8KpCBjtmcpNS9BHSecV7+sqFKxV/WpCKBZqeFkJAABw51n4QOCoweiebZ07O+pmtXJwDN8+52k89T0IAACAviFgdE/dZT1jB2NYOThGCG7zNJ75HgQAAECfEDDaM3V0nLqdpFzUYazUTqeHpp1J+jNP41WexhR9AwAAOEANRvdsa95/6mAMkpRJ+uToWL5dSrq0xetrhTlDs5W0YudtAAAQOgJGe1ztvbCteX9X41iqPwHj4Ew2bPgeyGvyNL6RtKADFgAACBVLpNrjpIOTg700zlwUetsr6WU3TII715JWdj8SAACA4BAwWuSog5N02g6sL3FVb5A4Og5O814v9AcHAAAIAQGjXa6uOtct9HYSMOwsxhcXx8LJLumABQAAQkTAaNfU0XFWNe//Pk/jsYNxaDLfJJLuXRwLJ6PzFQAACA4Bo11jR8dZOTiGy5PTK9VftoXTTX0PAAAA4EcEjHaNXRxkMt+sVX8fioWLsUiS7Wh0pX7sjdElThoHAAAAuETAaJfL9qd1i3zPXW4uZ0PPhaQHV8cEAABA9xAwWuawk9TKwTGczWJI/xR9TyXduTwuAAAAuoOA0T5XAcNFm9LLPI2nDo7zj8l88zSZb64k/SaWTAEAAAwOAaN9UxcHsXUPLmYKEgfH+MlkvrmVqTn5IoIGAADAYBAw2udqBkNyN4vRSLtTO5uRyASN30V9BgAAQO/9x/cABuh9nsbv7AxEXbeSlqrfTWiZp/HK0Zh+Yo+7tI8zluk4dSF3bXu75J3MTtwAAAC9RMDwYyoHsw+T+eYpT+NbSdc1D3Uus1TKadH3S2wh+LLpxwlZnsbvZELWTG47iwEAgBNE0Wj6478rit2q/ZH0CwHDjyu5Wd4kmWBQN2BI0qc8jW8n883KwbHwBjujk0nK7PK0TOxp0aooGo31xgyary+Xl77onlkXxe7NWcZjv5dnT0WxW5e5YRSN3unt5aSlj9WUKBpdyMxI/uTY6+et+4amxO8y1uuvuaOv2Sa5HFsAz1kjf8vAPzOcfRbb33Mq87ly+Hn1ezeKRof/+ShpK9O5c10UO1fnbr33y7dv33yPwYs8jRNJnz09/ONkvhm7Oliexiu5uRK+l3RhZxnQEtu6eKUKIWMy3/zi4PGD/xBw8Xse2JPXtczM3WvuimLXSG3SS+yYVnp7+dzXoti9OstoT4BWCjusfiyKXfbWDUr+LSTppih2MzfDOk0UjWaS/nzjJq+OrcR9Q/PW73LsNfcgaeojZLgcW0DP2V7md1pJui2K3bbOwTrymVHrfW6fu4XcLk2+kZQxy/E2irz9OHe4H4bkrhPUmaRbu4QHLbGbFLZ2MgvN9Ha4kKQPR2YTXJvp+BfgJ3tC8BoX9VhNK3OSdqFyJwPXUTTK6g2nsmO/x1uzyjOH42jD9RvvhWOvufdy29jkFFdyN7ZZ7dG4cSbpg6Q/JBVRNFrV/Jw69jcKwVtFR+EAABdXSURBVFuvv1dF0WgWRaMnmfeq67rHa0l/2b+/r9d38AgY/kxdHcgua7p3dLj3Mkt20CL7HN74HsdAlF1aM2tyED8oU/+0l5mqx3c+Qwbg26XMie6tnfkbvCgajaNotJYJFk2Hp0tJf0fRKGn4cTqJgOHPzPHxEofH+pCncebweChn0MXvbbHT2o8lbnpt1+02KopGVzo+oyJJS5/r2QNGyMDQfZC0HvrVdPv7r9V+p8bPfAb9jIDhz3vbstUJx7MYknRNyGiXXSrFpoTtSErebtbgGE59jKzBMXQdIQNDdy5pNdSZDHsxaCV/S774DPoBAcMv1+vuZ46Pd52nMTUZ7fLaGWdAblUuzM2aHIT9UvxQ4qY3dQs6B4AveAzdmdx1qOyaTP7rSa6jaNR4u/+uIGD45fSFaLs/fXF5TJmTn5XL2RbAN7vUqMyStHPbhaQpZT8DsgbH0KaPDR+/CyFjoW7NVN7QLadTLhv+zGrb0defLQI/tZPmXmbVx5dXfu5Vbintj5I2ltZ2Aftg+HWep/HU8d4TS5XrknOK95LWeRrPJvPNUK+OoH8ylWtVPVNzJ/izEre5d3iC97v8zZK1tXfFdRSN5KuF7TFFsTuslR/XPNRSx9ea136+CRel3aiZJgzvZJrCnFJXMJO7z6wbh8c6WcnX3ykXa29k6tnK7slzYY9ftuPWmb394GcyCBj+zWTWDTphd/eeSfrL1TGtM0n/zdP4q6TEbhYH91iO1pKi2G2jaHSj4xtVXkbRaOx6iZK9yljmCytz+LDrgZwwhh4ytqp5MmpbcB4zlOc7BI3ui2Cv0icqd6X+MopG7xw1hdiG/BqyNSdllpnuZfY9OSlw29vP7KxEpnJ//5kIGCyRCsC16xoHOyPieqnUwSeZ2Qz2bXDMvg7a7n4xdGU7dyUNPHaZL6DHYxvT4VVdWC4FlFIUu1VR7KaS7kreZdrYYMJStnPWVZ0Z1KLYbU/4+58NvaOXRMAIhfOkO5lvEpmdSptwLjObscrTeNrQYwwRoa1l9gunTPe1K5fdWeyXT5kwmbl6zIEiZKBvZipXwzOUE9wyn8sPDmdhZir39586erzOImCEYdbQcadqtpjwUtJfBA1nBj+l6kmZWYwzuX2flt1Yj71R6iNkoDfssidqIb8rE6ScLek+4e8/+OXOBIwwnNu6CadsncTU9XFf8DxozFp4vN7J03ghlkd5URS7W5XrFuIkANqZkGN1H5J0y8Z6r7qXKdYs6zqKRoPdIwC9s/U9gICsStzG9WxOVuI2g285T8AIR9LEQe3mbU23hjy4lPRnnsZPeRpnzGqUY8PFH77HMXBJiduc20LLumYlb5c4eKzesgXcp4SMSw14IzJgwM4cfXZL+qez1a8yFzpe+vloL1wNGl2kwnFu28Bmrg88mW+yPI0l6U/Xx37FmcwV2us8jfcy04krSSu7Vwck2QCW6PT+3XDvVmY50rGuTgvV7/pWZibkno31jiuK3SyKRluVazcsmVnCVRSNpswOAd1XFLtVFI3K3PQ2ikZXrmox7HGmLo7VVwSMsCRqqKjTQ8g4+CdsSJINHGv7M9Qv+LHMB5PLvUpQQ1Hsnuw6/U9HbvqhTsvaKBpdqdzznlQ5/hAVxS6xIaPsZxshA11XpiHIkJbolGk3fibpryga3cucZ7EEtWEEjLCc52mc2A5QznkMGc+dyVyx56o9QrPU8YAh1dtEaVbiNo8h950PUVHsMnsVk5CBXrNLfcrU662aHUlQlipX1yZ9P//404aNlexFT2aN3SJghGeRp/GyqY3sAgkZQHBO2HhvpgoBw27UVGZDqOTUY59g5nIt8iueimLXevcrQgb6zn6GlFnbf+fwNT2NolHi6FhvWVYdc1Hs1lE0+qLySyUP/nWxM4pGP66wWMlsNLitMq6hI2CE50wmjc+aegAbMp5kpgnL7CQMDEWmElPtUTSaVdgAr2xr2iaLA8te5aslikYXPnbRJmSgr6JoNFO5OjHJbXvrtlYcXNV5H9qlkmPV+4z7cYXFZ0mynyn3+h4+VoSO4wgYYbrO0zizO3I3YjLf3Noi41tRCwBI+qdg8F7Hv1AXOr1ealbiNpWv4gXmWg1eJHkLIQOeNDU7ONZpNXtfOrrE8r1MO9lV1QPYpg9PKrfU9VQ/znY8yJw/ZYSNlxEwwpXlaXzR1FIpybSwzdP4QuZEqczSDWAIMh0PGO/tVfpShZT26mOZK49ZmePhbYQMeNDK7OARN0WxS3wPwqei2C2iaHQr81na5MXT9/bncxSN7mQuDq0afLzOYR+McJ2rhU4yk/nmaTLfXEn6Xc3u+g10gl365HrjvTK3veFKmDv2eTxlD6BDyGCfDHTNXmbvhZnvgYSgKHarotiNZd7/ZT7L6/og06FqyefHdwSMsH1qa7O6yXyzlJmevG/j8YDAlVnDfF3my+SEri9ZidvgBIQM9NyjpC+SxhVqwnqvKHaZDRq/ybSybfoi6ifx+fEPAkb4bvM0buXFOplvtpP5ZirzhcxsBoYsU7n3QJmZiVmJ29z3bHr9wfcADggZg3XhewAN2ctcCPy1KHbjotglPVnWt5e0beLARbG7LYrdrCh272R24P6i5i6m8vlhUYMRvjOZQqJpWw9ou0zdypw8ndr2Dei8Ezbem+mNpYz2S6bM2uys5NDqelDzG1w+yVOB92uoyfDK14lWX0/wDp2O/oqi0aNMUXTW4AWKRzV04v+DRRtLRO3faXX4/1E0upAppD/8c6z6XbPeq+FuoF1AwOiGyyY34HuJLS5P8jTOZE6gQihgw78Fc5W4aXkajyfzzbblhy2z8d55FI2uimL3WmvZMjMcjy0ub1j0bKakNBsy1jInF2UK7gkZx211/GTsQs22Xh6yc5nv5mvb/W7WwEl61ufCcduoY60fXqO25e1Y5uLuhf3nKW39r6NotCzbCKSPCBjd8TlP4+1kvsnafFB7UjfL0ziROVmaib0zQrHyPYC2eAgXp2y8t9DrJ1CzEg+VnTAs1GA35JqKkOHKtsRtfM0kjFt+PNezg+9Urnbr4FLS2na32zocxyDZv+FWP892zFT+POhwzjRIQw4YXUyVyzyN15P5pvWx2xO8hQ0aVzJvnFM+/OBe67slD1Cm4wHjMopG4x+/1KNodKXjbRL34nlsFSGjda3XQtiliW3v79TI7KC9kn74zj32O53JfGZNXY8jVM9mGl6ydvmetbMRC7uz+UrHz4Gmrh67i4Zc5N3FL4ozSSu7d4UXtq1tNplvLiT9r6SvaqcNHP7ti4+r+kNjTxjKLEV7aSlUmeVRt5y0ts+eKExVvpnFe9mrw40NqpvKXOy69FDwelXmRl1YLlgUu21R7Ja2G9JNibtc2pPu3rOvq7Wkv175aeQ9az+zpyVuOuhNjIccMLrqEDLGvgcymW/Wk/lmMZlvxpIimb007kQHqqZ9bbMeJwC+A2yZGYbZ85Mo+wVfplAwqTgm1FQhZJzLzGQQMr4rO5t+yp4xLsxK3Mb350oVC5V7vZYKWD2Q6e1ZyHM1NENsQ8bRTlRDCXsvGWzAmMw3K99jqOFMLbavLcO2uF1O5puryXzzTmZ246O+t4Njf4367iT9Oplv2v6y9m3r88FLbrx3pn9/qZd5ju5ZK+1XhZBxpgHVPh1jX7+lNqVsaxbDLk0sE+5XDQ/FOXtSW6ZgPphzg4ZtS9zm0i6J9GXs8bG9GnINhmQ+GLs6hfVeZiZj5qMm4xg7plfH9coGghcq98H40n3b8iQ39TtrlV+m9xTic9yiEH73TMdbNieSMnsiNStxzKTWiOBEhZoMmlz8262Od1trpd26nV3KSt68q52t1jpeFzZtYRwhWOn4a0+Sbm2dnOvlqGVmM0P4/vJi6AFjre4GDOl7yJh27QT0lRmkl/4dEMJreykzK/HmdLw9UR0fuZ1kWtOunIwMtVUIGfiuTDtnyVxJXkm6aqLuyIaLlco9f49vtJYOXQifh6FYycw+HnvOz2TqMa5ctY2NotGx7wNJ/8w6DdJgl0hZK98DcMB74TfQsJXvAZywNGGmcsujkjrjgXsVlktB/yyTKrsE9lLSNopGM1ePH0Wjd7arz98qHw4TV48Pf+znctkai3NJf0fRKKm7XM8uw/ujxE0Hs1fVSwgY/XAm6e88jWe+BwI49hhQt6ykxG2udbx14V7dXZ7Ra4SMyk6pCzuT9GcUjbZRNFpG0ejq1BO+KBqNo2g0i6LRraT/0/Hli8+1ubElmrfUaQX7n2VC7vLUhg32dZdJ+m/Ju6xOOX7fDHqJ1GS+Wedp3OU6jB/9mafxxQCLgNFfwZyI24337iR9qHmopcdp87+iaOTpobWXNA19Z9tny6Vu1Z/vhkbZv9kXnXaify6ztOqTJEXRaK/vy39+rFF7p+/r3csUcL9lKB2WXPkcRaNTnlfXPr4VCIti92RnFP4+4Zhnsq+9KBo9yrze1jJF49tntzu87sb2n6fu/TXoPY4GHTCsMgVqXfLJFlBfBXTlF6gq8z2AHyxVP2BkDsbRRYcOTMF3uLEnzIc1/WwoWkJR7BLbkvNYAfJrzvQ9PNQNEa/5GHrAxU/+jKLR+q3nzb5fP0r6s8Lxz+1P3c/1H90MvUvg0JdISf1MmO8lrfM05koNuuwxtOYFJ2y895qhf+l0poD62WZag15HfaKFTDvtEL15JRxBO3pRwj63H5sfSil7tb/3S3AGHzDsVf4+7tFwJum/eRoHtV8GcIJQw3+dcWWuBoHmETJOUxS7p6LYXUn66nssz+wl/Ua46D/7HP8qvzVUh6Wgg+0edTD4gGElvgfQoA+StsxmoGP2CvRk3H6JVfkCu6c1bfcQMk5XFLuFpN/kf7fsO0njDrekxYnsZ+xYfmbSHtWBOrO2EDD0z54MfZzFODjMZqzyNB77HgxQwnIy34R8BajKLEbmehBoByHjdEWxuy2K3VjSF7UfNO4l/VoUu0b23EDYns2k/ar2zu2+SrogXHxHwPgu8T2AFlxKKvI0zlg2hYA9KtzlUQentkZ8aGGJRtPHd+GmxG3WevtE3sv65hNDRpnfs67syH9/UACbshXFLrFB4zeZv0tTy1ceZU7yoqLYTR3PFmZH/vtNi7OTLt8ftwq/JXPl13FR7FZFsZvKBI0mXnt7fX/NLQiz//bLt2/ffI8hGHka38p9J4FQ7WVOkkK/UoyG5Wkc2ofAx8l8k/kexDG2d/9MxwsQn4pi10pgsu0aQ910s/Tfwf5tXztJuvV9ldBuFDd+5T+H8nz7bIf8JtsG+ELfW4Ce2jXq0NL28LNqunnCG3/r1p7vZ2N53rb3R9tT/ha2W1rIS6idvo7t8ziV+fud+rp7lGlju5J5za1cjauPCBjP2Kv6W3Wo04kDh7XuS9raDlNgAeN+Mt9MfQ8CQPtsm9vxGzdZhxqa0F028L7lyfdFjS4iYPzAFkOX3aWxb24kZbYmBQNg90z5y/c4rL2kC4IuAADdRsB4QZ7GmapvFtQHhzXwt5zs9VuexgtJf/geh/XbZL6h2wsAAB1HwHhFnsZrsYOrZDow3Iqw0Ut5Gm9ldjH17ctkvkl8DwIAANRHwHiFrcdYiZDx3INM2FixjKr7Apqpu5nMNzPfgwAAAG4QMN5AyDjqXubvs5a0ZoajOwgXAACgKQSMIwgZJ7uX6cT1/EfMePhnX8tXMnu+hLAsinABAEAPETBKsCdmtzq9ZzJe9yDptXaDW/tT1ZOa3WDqQsf3PnBhWvP+Y4URJF5CzQUAAD1FwDhBnsaJpM++xwF02F7SjG5RAAD0FwHjRHbfgEzhXhkGQnUvEy62vgcCAACaQ8CowC6ZWojZDKCMvaTFZL7JfA8EAAA0j4BRQ57GY5nZDGozgJd9kbSczDev1dsAAICeIWA4wLIp4Cd3MrMWW98DAQAA7SJgOJSn8UKmBeiZ56EAvjzIBIuV74EAAAA/CBiO2fqMRNInz0MB2rSXlEzmm6XvgQAAAL8IGA3J0/hC0lLUZ6D/vsqEC+osAAAAAaNpeRpfyQQN6jPQN7SdBQAAPyFgtMRu0rcQ9RnovkeZYLHyPRAAABAeAkaLbH3GUtK177EAFexlWs4mvgcCAADCRcDwwLa1TUR9BrrjRqY7FHUWAADgTQQMj/I0nskEDeozEKp7mWCx9j0QAADQDQQMz+yyqYWkz77HAjzzKNMZKvM9EAAA0C0EjEDkaTyWqc/44HkoGLa9zOtwyXIoAABQBQEjMLY+YynpveehYHhuZGYttr4HAgAAuouAEShbn7EUbW3RvAeZOouV74EAAIDuI2AEzNZnJJI+eR4K+mkvEywy3wMBAAD9QcDoAFufkYm2tnDni6izAAAADSBgdIitz8hEW1tUdycza7H1PRAAANBPBIwOytN4IbN0ivoMlPUoaUadBQAAaBoBo6NsfcZS0rXvsSBoe5nOUEvfAwEAAMNAwOi4PI0vZIIG9Rn40VeZcEGdBQAAaA0BoyfyNL6SCRrUZ+BeZjnU1vdAAADA8BAweiZP40TSQtRnDNGjTAH3re+BAACA4SJg9JBta5uI+oyh2Mu0nE18DwQAAICA0WO2rW0i6jP67EZm1oI6CwAAEAQCxgDkaTyTqc9g2VR/3MsUcK98DwQAAOA5AsZA2La2C0mffY8FtTzKBIvM90AAAABeQsAYGFufsZT0wfNQcJq9zPO2ZDkUAAAIGQFjoGx9xlLSe89DwXF3MnUWW98DAQAAOIaAMXB5Gi9kCsGpzwjPg0ywWPkeCAAAQFkEDBzqMxJJnzwPBcZeJlhkvgcCAABwKgIG/mHrMzLR1tanL6LOAgAAdBgBAz+x9RmZpHO/IxmUe0kz6iwAAEDXETDwqjyNE5nWttRnNOdRJlisfA8EAADABQIG3mTrM5aSrn2PpWf2MvtZLH0PBAAAwCUCBkrJ0/hCJmhQn1HfjUwRN3UWAACgdwgYOEmexjOZjlPUZ5zuXiZYrH0PBAAAoCkEDJzMLptaiPqMsh5lgsWt74EAAAA0jYCBymxb20TUZ7xmL9NyNvE9EAAAgLYQMFCbbWu7lPTe81BCciNTxL31PRAAAIA2ETDgjK3PWGrYy6buZYLFyvdAAAAAfCBgwKln9RmffY+lZY8ywSLzPRAAAACfCBhohK3PWEr64HkobfgiU2tB21kAADB4BAw0ytZnZOpnW9s7me5QW98DAQAACAUBA63I03gh03GqD/UZDzLBYuV7IAAAAKEhYKA1tj4jkfTJ81Cq2svUWSx9DwQAACBUBAy0Lk/jC5n6jEvfYznBV5lwQZ0FAADAGwgY8CZP4yuZoBFyfca9pBl1FgAAAOUQMOBdnsaJTGvbkOozHmWCxcr3QAAAALqEgIEg2PqMpaRrz0PZy7ScTTyPAwAAoJMIGAiK5/oM6iwAAABqImAgSHb/jJman9HYywSajDoLAACA+ggYCJpdOjWTdCV3sxp7SbeSbifzza2jYwIAAEAEDHSIDRtTSRfP/lmmMPxB0lbSWtKKwm0AAIDmEDDQeXkajyWNX/hPa+opAAAA2kXAAAAAAODM//geAAAAAID+IGAAAAAAcIaAAQAAAMAZAgYAAAAAZwgYAAAAAJwhYAAAAABwhoABAAAAwBkCBgAAAABnCBgAAAAAnCFgAAAAAHCGgAEAAADAGQIGAAAAAGcIGAAAAACcIWAAAAAAcIaAAQAAAMAZAgYAAAAAZwgYAAAAAJwhYAAAAABwhoABAAAAwBkCBgAAAABnCBgAAAAAnCFgAAAAAHCGgAEAAADAGQIGAAAAAGcIGAAAAACcIWAAAAAAcIaAAQAAAMAZAgYAAAAAZwgYAAAAAJwhYAAAAABwhoABAAAAwBkCBgAAAABnCBgAAAAAnCFgAAAAAHCGgAEAAADAGQIGAAAAAGcIGAAAAACcIWAAAAAAcIaAAQAAAMAZAgYAAAAAZwgYAAAAAJwhYAAAAABwhoABAAAAwBkCBgAAAABn/j+Qs+xktagfFgAAAABJRU5ErkJggg==';
+let docxLibPromise = null;
+
+function loadDocxLib() {
+  if (window.docx) return Promise.resolve(window.docx);
+  if (!docxLibPromise) docxLibPromise = new Promise((resolve, reject) => {
+    const s = document.createElement('script'); s.src = DOCX_LIB_URL; s.async = true;
+    s.onload = () => window.docx ? resolve(window.docx) : reject(new Error('Word library did not start.'));
+    s.onerror = () => { docxLibPromise = null; reject(new Error('Could not download the Word library. It needs internet the first time in each session.')); };
+    document.head.appendChild(s);
+  });
+  return docxLibPromise;
+}
+
+function b64ToBytes(b64) { const s = atob(b64); const u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u; }
+
+async function assetBlob(path) {
+  const a = S.assets[path]; if (!a) throw new Error(`Image missing from the report: ${path}`);
+  if (a.blob || a.src) return a.blob || a.src;
+  const r = await fetch(a.url); if (!r.ok) throw new Error(`Could not read image ${path}`);
+  return r.blob();
+}
+
+// probe (no size): dimensions only; with a size: JPEG at that size (never upscaled)
+async function reportImage(blob, wpx, hpx) {
+  const bmp = await createImageBitmap(blob);
+  const width = bmp.width, height = bmp.height;
+  if (!wpx) { if (bmp.close) bmp.close(); return { width, height }; }
+  let out = blob;
+  if (width > wpx || height > hpx || blob.type !== 'image/jpeg') {
+    const c = document.createElement('canvas'); c.width = Math.min(width, wpx); c.height = Math.min(height, hpx);
+    c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+    out = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.85));
+  }
+  if (bmp.close) bmp.close();
+  return { data: new Uint8Array(await out.arrayBuffer()), width, height, type: 'jpg' };
+}
+
+// getBlob(path) gives each image of the report
+async function buildDocx(report, getBlob, draft) {
+  const D = await loadDocxLib();
+  const logoBytes = b64ToBytes(GMIN_LOGO_B64);
+  const dv = new DataView(logoBytes.buffer);
+  const logo = { data: logoBytes, width: dv.getUint32(16), height: dv.getUint32(20) };
+  const getImage = async (path, wpx, hpx) => reportImage(await getBlob(path), wpx, hpx);
+  const doc = await window.FieldReportDocx.build(report, { docx: D, getImage, logo, draft });
+  return D.Packer.toBlob(doc);
+}
+
+async function wordDraft() {
+  toast('Building the Word file...', 4000);
+  const draft = S.report.phase !== 'issued';
+  download(await buildDocx(S.report, assetBlob, draft), window.FieldReportDocx.outputName(S.report, draft));
+  toast('Word file saved to Downloads.');
+}
+
+// ---------------------------------------------------------------------------
+//  Office in the browser: the app works directly in "006 - Field Reports"
+//  (File System Access, Edge or Chrome on the PC). Same rules as server.py.
+// ---------------------------------------------------------------------------
+const IN_PROGRESS = '01 - In Progress', ISSUED = '02 - Issued', SUPERSEDED = '_superseded';
+const ID_RE = /^Field_Report_(\d{4})_(\d{2})_(\d{4})/;
+const UPLOAD_SUFFIX_RE = /( \(\d+\)| - rev\d+)+(?=\.zip$)/i;
+const ASSET_RE = /^(photos|drawings|annex)\/[A-Za-z0-9_-]{1,64}\.(jpg|jpeg|png)$/;
+const DEFAULT_PROJECT = 'Oko Gold Mines';
+const canPickFolder = typeof window.showDirectoryPicker === 'function';
+let ROOT = null;
+
+function apiError(message, status) { const e = new Error(message); e.status = status || 400; return e; }
+const isZip = (name) => /\.zip$/i.test(name);
+const localDate = () => new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+const stamp = () => { const d = new Date(), p = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`; };
+
+async function subdir(name, create = true) {
+  let d = ROOT;
+  for (const part of name.split('/')) d = await d.getDirectoryHandle(part, { create });
+  return d;
+}
+async function fileNames(name) {
+  let d; try { d = await subdir(name, false); } catch (e) { return []; }
+  const out = []; for await (const h of d.values()) if (h.kind === 'file') out.push(h.name);
+  return out;
+}
+async function fileIn(dir, name) { try { return await dir.getFileHandle(name); } catch (e) { return null; } }
+async function packageFile(sub, name) {
+  if (!name || /[\\/]/.test(name) || !isZip(name)) throw apiError(`Invalid package name: ${name}`);
+  const fh = await fileIn(await subdir(sub), name);
+  if (!fh) throw apiError(`Package not found: ${name}`, 404);
+  return fh.getFile();
+}
+async function reportOf(file) {
+  const z = await readZip(file, (n) => n === 'report.json');
+  if (!z['report.json']) throw new Error('report.json is missing');
+  return JSON.parse(new TextDecoder().decode(z['report.json']).replace(/^﻿/, ''));
+}
+async function assetsOf(file) {
+  const z = await readZip(file, (n) => ASSET_RE.test(n)); const out = {};
+  for (const [n, data] of Object.entries(z)) out[n] = new Blob([data], { type: 'image/jpeg' });
+  return out;
+}
+async function writeFile(dir, name, blob) {
+  // the browser writes to a side file and swaps it in on close, so OneDrive
+  // never uploads a half-written package
+  const w = await (await dir.getFileHandle(name, { create: true })).createWritable();
+  await w.write(blob); await w.close();
+}
+async function writePackage(dir, name, report, assets) {
+  const entries = [{ name: 'report.json', data: new TextEncoder().encode(JSON.stringify(report, null, 2)) }];
+  for (const n of Object.keys(assets).sort()) entries.push({ name: n, data: new Uint8Array(await assets[n].arrayBuffer()) });
+  await writeFile(dir, name, makeZip(entries));
+}
+async function moveFile(fromDir, name, toDir, newName) {
+  const fh = await fromDir.getFileHandle(name);
+  try { if (fh.move) { await fh.move(toDir, newName); return; } } catch (e) { /* not supported here: copy below */ }
+  await writeFile(toDir, newName, await fh.getFile());
+  await fromDir.removeEntry(name);
+}
+
+function shortName(text, limit) {
+  const s = window.FieldReportDocx.clean(text || '').replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, ' ').trim().slice(0, 120);
+  return window.FieldReportDocx.shortText(s, limit);
+}
+function canonicalName(report) {
+  const short = shortName(report.header && report.header.title, 40);
+  return short ? `${report.reportId} - ${short}.zip` : `${report.reportId}.zip`;
+}
+
+// The tablet saves by download + upload, each save as "name - revN.zip"
+// (a phone may give "name (1).zip"). Keep the highest revision of each report
+// under its original name, move the others to _superseded (never deleted).
+async function consolidate(inDir) {
+  const byId = {};
+  for await (const h of inDir.values()) {
+    if (h.kind !== 'file' || !isZip(h.name)) continue;
+    try {
+      const f = await h.getFile(), rep = await reportOf(f);
+      (byId[rep.reportId] = byId[rep.reportId] || []).push({ rev: rep.revision || 0, mtime: f.lastModified, name: h.name });
+    } catch (e) { continue; } // unreadable or still uploading: leave it alone
+  }
+  for (const items of Object.values(byId)) {
+    items.sort((a, b) => b.rev - a.rev || b.mtime - a.mtime || (a.name < b.name ? 1 : -1));
+    const keep = items[0];
+    if (items.length > 1) {
+      const sup = await subdir(`${IN_PROGRESS}/${SUPERSEDED}`), st = stamp();
+      for (const it of items.slice(1)) await moveFile(inDir, it.name, sup, `${it.name.replace(/\.zip$/i, '')}_${st}.zip`);
+    }
+    const target = keep.name.replace(UPLOAD_SUFFIX_RE, '');
+    if (target !== keep.name && !await fileIn(inDir, target)) await moveFile(inDir, keep.name, inDir, target);
+  }
+}
+
+async function listInProgress() {
+  const inDir = await subdir(IN_PROGRESS);
+  await consolidate(inDir);
+  const out = [];
+  for await (const h of inDir.values()) {
+    if (h.kind !== 'file' || !isZip(h.name)) continue;
+    let rep;
+    try { rep = await reportOf(await h.getFile()); } catch (e) {
+      out.push({ file: h.name, error: 'Unreadable package. Still uploading?' }); continue;
+    }
+    const hd = rep.header || {};
+    out.push({ file: h.name, reportId: rep.reportId, seq: rep.seq, title: hd.title, subject: hd.subject, wbs: hd.wbs,
+      inspector: hd.inspector, inspectionDate: hd.inspectionDate, phase: rep.phase, revision: rep.revision, lastSaved: rep.lastSaved });
+  }
+  return out.sort((a, b) => (b.seq || 0) - (a.seq || 0));
+}
+
+// from file names only: opening every issued package would make OneDrive download all of them
+async function listIssued() {
+  const names = await fileNames(ISSUED);
+  return names.filter(isZip).sort().reverse().map((fname) => {
+    const base = fname.replace(/\.zip$/i, ''), rid = base.split(' - ')[0];
+    return { file: fname, reportId: rid, title: base.includes(' - ') ? base.slice(rid.length + 3) : '',
+      documents: names.filter(n => n.startsWith(rid) && /\.(pdf|docx)$/i.test(n)).sort() };
+  });
+}
+
+async function nextSeq() {
+  let max = 0;
+  for (const sub of [IN_PROGRESS, `${IN_PROGRESS}/${SUPERSEDED}`, ISSUED]) {
+    for (const n of await fileNames(sub)) { const m = ID_RE.exec(n); if (m) max = Math.max(max, +m[1]); }
+  }
+  if (max + 1 > 9999) throw apiError('Report numbering reached 9999.');
+  return max + 1;
+}
+
+async function createReport(body) {
+  const h = body.header || {}, by = (body.by || '').trim();
+  if (!(h.title || '').trim()) throw apiError('Title is required.');
+  const inDir = await subdir(IN_PROGRESS), today = new Date();
+  for (let i = 0; i < 20; i++) {
+    const seq = await nextSeq();
+    const rid = `Field_Report_${String(seq).padStart(4, '0')}_${String(today.getMonth() + 1).padStart(2, '0')}_${today.getFullYear()}`;
+    const report = {
+      schemaVersion: 2, reportId: rid, seq, revision: 1, phase: 'pre',
+      phaseHistory: [{ to: 'pre', at: nowIso(), by, reason: '' }],
+      lastSaved: { at: nowIso(), by, device: 'pc' },
+      header: { title: (h.title || '').trim(), subject: (h.subject || '').trim(), wbs: (h.wbs || '').trim(),
+        location: '', inspectionDate: '', inspector: (h.inspector || '').trim() },
+      general: { project: DEFAULT_PROJECT, wbsArea: '', system: '', description: '', contractor: '', drawings: '' },
+      models: [], parameters: [], scope: [], results: [], findings: [], drawings: [], photos: [],
+      fieldRecord: null, conclusion: '', annexes: [], issued: null
+    };
+    const name = canonicalName(report);
+    if (await fileIn(inDir, name)) continue; // another PC just took this number
+    await writePackage(inDir, name, report, {});
+    return { file: name, report };
+  }
+  throw apiError('Could not reserve a report number, try again.');
+}
+
+async function loadPackage(name, issued) {
+  const file = await packageFile(issued ? ISSUED : IN_PROGRESS, name);
+  const report = await reportOf(file), blobs = await assetsOf(file);
+  return { file: name, report, assets: Object.keys(blobs), blobs, readOnly: !!issued };
+}
+
+async function savePackage(body) {
+  const inDir = await subdir(IN_PROGRESS);
+  const file = await packageFile(IN_PROGRESS, body.file);
+  const report = clone(body.report || {});
+  const current = await reportOf(file);
+  if (current.reportId !== report.reportId) throw apiError('This package belongs to another report.');
+  if (current.revision !== body.baseRevision) {
+    throw apiError(`This report was saved somewhere else in the meantime (revision ${current.revision}, you opened revision ${body.baseRevision}). Reload it before saving, your changes are kept in this browser.`, 409);
+  }
+  if (current.phase === 'issued') throw apiError('This report is already issued.');
+  if (!['pre', 'field', 'closeout'].includes(report.phase)) throw apiError('A report is only issued with the Issue button.');
+  const assets = await assetsOf(file);
+  for (const n of body.removedAssets || []) delete assets[n];
+  for (const [n, blob] of Object.entries(body.newAssets || {})) {
+    if (!ASSET_RE.test(n)) throw apiError(`Invalid image name: ${n}`);
+    assets[n] = blob; // already upright JPEG, max 2000 px (processImage)
+  }
+  const referenced = collectRefs(report), kept = {};
+  for (const n of referenced) if (assets[n]) kept[n] = assets[n];
+  const missing = referenced.filter(n => !kept[n]);
+  if (missing.length) throw apiError('Images missing from the save: ' + missing.sort().join(', '));
+  report.revision = (current.revision || 0) + 1;
+  report.lastSaved = { at: nowIso(), by: body.by || '', device: 'pc' };
+  await writePackage(inDir, body.file, report, kept);
+  return { file: body.file, report, blobs: kept };
+}
+
+async function issuePackage(body) {
+  const inDir = await subdir(IN_PROGRESS), iss = await subdir(ISSUED), by = body.by || '';
+  const file = await packageFile(IN_PROGRESS, body.file);
+  const report = await reportOf(file);
+  if (report.revision !== body.baseRevision) throw apiError('Save the report (or reload it) before issuing.', 409);
+  if (report.phase !== 'closeout') throw apiError('Only a report in Close-out can be issued.');
+  if (!(report.conclusion || '').trim()) throw apiError('Write the conclusion before issuing.');
+  report.phase = 'issued';
+  report.phaseHistory.push({ to: 'issued', at: nowIso(), by, reason: '' });
+  report.issued = { date: localDate(), by };
+  report.revision = (report.revision || 0) + 1;
+  report.lastSaved = { at: nowIso(), by, device: 'pc' };
+  if (await fileIn(iss, body.file)) throw apiError(`An issued package with this name already exists: ${body.file}`);
+  const assets = await assetsOf(file);
+  // all or nothing: on any failure the report stays in Close-out, nothing left in Issued
+  let docName = null;
+  try {
+    await writePackage(iss, body.file, report, assets);
+    const docx = await buildDocx(report, async (p) => { if (!assets[p]) throw new Error(`Image missing from the report: ${p}`); return assets[p]; }, false);
+    const base = window.FieldReportDocx.outputName(report, false).replace(/\.docx$/, '');
+    docName = `${base}.docx`;
+    for (let n = 2; await fileIn(iss, docName); n++) docName = `${base} (${n}).docx`;
+    await writeFile(iss, docName, docx);
+  } catch (e) {
+    for (const n of [body.file, docName]) if (n && await fileIn(iss, n)) { try { await iss.removeEntry(n); } catch (x) { /* best effort */ } }
+    throw e;
+  }
+  await inDir.removeEntry(body.file);
+  return { docx: docName, report };
+}
+
+// a single page, but a double click must not run two writes at once
+let busy = Promise.resolve();
+function locked(fn) { const run = busy.then(fn); busy = run.catch(() => {}); return run; }
+
+async function localApi(method, path, body) {
+  const url = new URL(path, 'http://x'), q = Object.fromEntries(url.searchParams);
+  if (!ROOT) throw apiError('The reports folder is not connected.');
+  switch (`${method} ${url.pathname}`) {
+    case 'GET /api/reports': return locked(async () => ({ inProgress: await listInProgress(), issued: await listIssued() }));
+    case 'GET /api/report': return loadPackage(q.file, q.issued === '1');
+    case 'POST /api/new': return locked(() => createReport(body));
+    case 'POST /api/save': return locked(() => savePackage(body));
+    case 'POST /api/issue': return locked(() => issuePackage(body));
+    default: throw apiError(`Not available in this mode: ${path}`, 404);
+  }
+}
+
+async function connectFolder(handle) {
+  const opts = { mode: 'readwrite' };
+  if (await handle.queryPermission(opts) !== 'granted' && await handle.requestPermission(opts) !== 'granted') {
+    throw apiError('The browser was not allowed to edit files in that folder.');
+  }
+  // only the folder that holds "01 - In Progress": picking a folder one level
+  // too deep (or too high) must not create a second set of report folders
+  if (!await hasDir(handle, IN_PROGRESS)) {
+    const inside = [IN_PROGRESS, ISSUED, SUPERSEDED].includes(handle.name);
+    return alertBox('Wrong folder', inside
+      ? `"${handle.name}" is a folder inside the reports folder. Choose the folder above it, "006 - Field Reports".`
+      : `"${handle.name}" is not the reports folder (it has no "${IN_PROGRESS}" folder). Choose "006 - Field Reports".`);
+  }
+  ROOT = handle; S.mode = 'folder'; S.root = handle.name; S.models = BUILT_IN_MODELS; S.savedFolder = handle;
+  await setSetting('folder', handle);
+  await goHome();
+}
+async function hasDir(dir, name) { try { await dir.getDirectoryHandle(name); return true; } catch (e) { return false; } }
+
+async function openIssuedDoc(name) {
+  if (!name || /[\\/]/.test(name) || !/\.(pdf|docx)$/i.test(name)) throw apiError('Invalid document name.');
+  const fh = await fileIn(await subdir(ISSUED), name);
+  if (!fh) throw apiError('Document not found.', 404);
+  const file = await fh.getFile();
+  if (/\.pdf$/i.test(name)) {
+    const w = window.open(URL.createObjectURL(new Blob([file], { type: 'application/pdf' })), '_blank');
+    if (w) return;
+  }
+  download(file, name); // Word copy (or PDF when the browser blocks the new tab)
+  toast('A copy was saved to Downloads.');
+}
+
+async function addPhotos(files) {
+  for (const p of await addImages(files, 'photos')) S.report.photos.push({ id: uid('p'), file: p, caption: '' });
+  markDirty(); render();
+}
+
+async function onAct(e) {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const fn = ACTIONS[el.dataset.act]; if (!fn) return;
+  if (el.tagName !== 'INPUT') e.preventDefault();
+  try { await fn(el); } catch (err) {
+    console.error(err);
+    await alertBox(err.status === 409 ? 'Saved somewhere else' : 'Something went wrong', err.message || String(err));
+  }
+}
+document.addEventListener('click', (e) => { if (!e.target.closest('[data-act]') || e.target.closest('[data-act]').type === 'checkbox') return; onAct(e); });
+document.addEventListener('change', (e) => { const el = e.target.closest('[data-act]'); if (el && el.type === 'checkbox') onAct(e); });
+
+window.addEventListener('beforeunload', (e) => { if (S.dirty) { saveDraft(); e.preventDefault(); e.returnValue = ''; } });
+
+// ---------------------------------------------------------------------------
+//  Start
+// ---------------------------------------------------------------------------
+(async function start() {
+  render();
+  // ask the browser not to clear the field work when the device runs low on space
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) { /* not supported */ }
+  try {
+    if (S.mode === 'server') {
+      const cfg = await api('GET', '/api/config');
+      S.models = cfg.models; S.root = cfg.root;
+      await loadList();
+    } else {
+      S.fileDrafts = (await allDrafts() || []).filter(d => d.mode === 'file');
+      if (canPickFolder) {
+        // PC browser: back into the reports folder when the browser still allows it
+        S.savedFolder = await getSetting('folder');
+        if (S.savedFolder && await S.savedFolder.queryPermission({ mode: 'readwrite' }) === 'granted') await connectFolder(S.savedFolder);
+      }
+    }
+    render();
+    if (!user()) await askUser();
+  } catch (err) {
+    app.innerHTML = `<div class="banner warn">${esc(err.message)}</div>`;
+  }
+})();
+})();
+</script>
+</body>
+</html>

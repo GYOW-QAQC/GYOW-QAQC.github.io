@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QAQC Hub</title>
+<style>
+  :root { --navy: #003f53; --teal: #00556f; --gold: #c3932c; --bg: #f2f4f6; --card: #ffffff; --border: #d5dade; --text: #1f2733; --muted: #66707a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.45 "Segoe UI", Roboto, Arial, sans-serif; }
+  header { background: var(--navy); color: #fff; padding: 14px 16px; }
+  header h1 { margin: 0; font-size: 20px; letter-spacing: .02em; }
+  header p { margin: 2px 0 0; font-size: 13px; opacity: .85; }
+  main { max-width: 900px; margin: 0 auto; padding: 16px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+  a.tile { display: block; background: var(--card); border: 1px solid var(--border); border-top: 4px solid var(--gold); border-radius: 10px; padding: 16px; color: inherit; text-decoration: none; }
+  a.tile:hover { box-shadow: 0 3px 10px rgba(0,0,0,.08); }
+  a.tile h2 { margin: 0 0 6px; font-size: 17px; color: var(--teal); }
+  a.tile p { margin: 0; font-size: 14px; color: var(--muted); }
+  footer { max-width: 900px; margin: 0 auto; padding: 8px 16px 24px; font-size: 12px; color: var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <h1>QAQC Hub</h1>
+  <p>GYOW QA/QC tools for the office, the tablet and the phone</p>
+</header>
+<main>
+  <div class="tiles">
+    <a class="tile" href="field-reports/">
+      <h2>Field Reports</h2>
+      <p>Inspection reports from pre-report to issue: office, field tablet, close-out.</p>
+    </a>
+  </div>
+</main>
+<footer>The tools run in your browser. Report data stays in the OKO-QAQC SharePoint library and on your device.</footer>
+</body>
+</html>
