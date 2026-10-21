@@ -96,7 +96,7 @@
 <header class="top">
   <h1>QAQC Field Reports</h1>
   <span class="mode" id="modeLabel"></span>
-  <span class="mode" title="App version">v2026-10-21d</span>
+  <span class="mode" title="App version">v2026-10-21e</span>
   <span class="spacer"></span>
   <span class="user" id="userLabel" data-act="set-user" title="Change your name"></span>
 </header>
@@ -1236,7 +1236,7 @@ async function openZipFile(file) {
   }
   resetReportState();
   S.report = report; S.file = null; S.readOnly = false; S.issuedPkg = false;
-  S.origName = file.name.replace(/( \(\d+\)| - rev\d+)+(?=\.zip$)/i, '');
+  S.origName = file.name.replace(/\.zip\.txt$/i, '.zip').replace(/( \(\d+\)| - rev\d+)+(?=\.zip$)/i, '');
   S.baseRevision = report.revision;
   for (const [name, data] of Object.entries(files)) {
     if (name === 'report.json') continue;
@@ -1298,15 +1298,17 @@ async function save() {
   }
 }
 
-// Straight from the app to SharePoint/OneDrive through the Android share menu,
-// where the browser allows sharing this kind of file. False: use Downloads.
+// Straight from the app to SharePoint/OneDrive through the Android share menu.
+// Android browsers refuse to share .zip files, so the package travels as
+// ".zip.txt" (same bytes); the office app gives it back its .zip name.
+// False: use Downloads.
 async function sharePackage(blob, name) {
-  const file = new File([blob], name, { type: 'application/zip' });
+  const file = new File([blob], `${name}${SHARE_SUFFIX}`, { type: 'text/plain' });
   try { if (!navigator.canShare || !navigator.canShare({ files: [file] })) return false; } catch (e) { return false; }
   for (;;) {
-    const r = await modal({ title: 'Package ready', html: `<p><b>${esc(name)}</b></p>
+    const r = await modal({ title: 'Package ready', html: `<p><b>${esc(name)}${SHARE_SUFFIX}</b></p>
       <p>Tap <b>Send</b>, choose <b>SharePoint</b> (or OneDrive), then <b>OKO-QAQC &gt; Documents &gt; 006 - Field Reports &gt; 01 - In Progress</b>.</p>
-      <p class="hint">It has a new name, so nothing is overwritten: the office app keeps the newest revision. Your work also stays on this device until you discard it.</p>`,
+      <p class="hint">It has a new name, so nothing is overwritten: the office app keeps the newest revision and turns ".zip.txt" back into ".zip". Your work also stays on this device until you discard it.</p>`,
       buttons: [{ label: 'Save to Downloads instead', value: 'dl' }, { label: 'Send', value: 'send', primary: true }] });
     if (r.button !== 'send') return false;
     try { await navigator.share({ files: [file], title: name }); toast('Sent. Check that it reached 01 - In Progress.', 4000); return true; }
@@ -1431,7 +1433,7 @@ const ACTIONS = {
     await openServerReport(res.file, false);
   },
   async 'open-zip'() {
-    const [f] = await pickFiles({ accept: '.zip,application/zip' });
+    const [f] = await pickFiles({ accept: '.zip,application/zip,.txt,text/plain' }); // .zip.txt: sent, not yet tidied by the office
     if (f) { await openZipFile(f); await confirmUser(); }
   },
   async resume(el) { const d = await getDraft(el.dataset.key); if (d) { resumeDraft(d); await confirmUser(); } },
@@ -1596,6 +1598,7 @@ const ID_RE = /^Field_Report_(\d{4})_(\d{2})_(\d{4})/;
 const UPLOAD_SUFFIX_RE = /( \(\d+\)| - rev\d+)+(?=\.zip$)/i;
 const ASSET_RE = /^(photos|drawings|annex)\/[A-Za-z0-9_-]{1,64}\.(jpg|jpeg|png)$/;
 const DEFAULT_PROJECT = 'Oko Gold Mines';
+const SHARE_SUFFIX = '.txt'; // see sharePackage()
 const canPickFolder = typeof window.showDirectoryPicker === 'function';
 let ROOT = null;
 
@@ -1663,6 +1666,14 @@ function canonicalName(report) {
 // (a phone may give "name (1).zip"). Keep the highest revision of each report
 // under its original name, move the others to _superseded (never deleted).
 async function consolidate(inDir) {
+  // packages sent from the tablet share menu arrive as ".zip.txt"
+  const shared = [];
+  for await (const h of inDir.values()) if (h.kind === 'file' && /\.zip\.txt$/i.test(h.name)) shared.push(h.name);
+  for (const n of shared) {
+    let target = n.replace(/\.txt$/i, '');
+    for (let k = 2; await fileIn(inDir, target); k++) target = n.replace(/\.zip\.txt$/i, ` (${k}).zip`);
+    await moveFile(inDir, n, inDir, target);
+  }
   const byId = {};
   for await (const h of inDir.values()) {
     if (h.kind !== 'file' || !isZip(h.name)) continue;
