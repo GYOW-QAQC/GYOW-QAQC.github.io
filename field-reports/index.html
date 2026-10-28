@@ -99,7 +99,7 @@
 <header class="top">
   <h1>QAQC Field Reports</h1>
   <span class="mode" id="modeLabel"></span>
-  <span class="mode" title="App version">v2026-10-21f</span>
+  <span class="mode" title="App version">v2026-10-28a</span>
   <span class="spacer"></span>
   <span class="user" id="userLabel" data-act="set-user" title="Change your name"></span>
 </header>
@@ -709,7 +709,7 @@ async function processImage(file) {
     return blob;
   } catch (e) {
     if (S.mode === 'server') return file; // the PC side converts it (HEIC included)
-    throw new Error(`"${file.name}" could not be read by the browser. If it is a HEIC photo, set the camera to JPG: Camera > Settings > Advanced picture options > High efficiency pictures > Off.`);
+    throw new Error(`"${file.name}" could not be read by the browser. If it is a HEIC photo, ${office() ? 'convert it to JPG first' : 'set the camera to JPG: Camera > Settings > Advanced picture options > High efficiency pictures > Off'}.`);
   }
 }
 
@@ -864,7 +864,8 @@ function markDirty() {
 // ---------------------------------------------------------------------------
 //  Who may edit what
 // ---------------------------------------------------------------------------
-function ownsPhase(ph) { return office() ? (ph === 'pre' || ph === 'closeout') : ph === 'field'; }
+// PC: every open phase (an analyst may do the whole report at the desk); tablet: Field only
+function ownsPhase(ph) { return office() ? (ph === 'pre' || ph === 'field' || ph === 'closeout') : ph === 'field'; }
 function can(part) {
   if (!S.report || S.readOnly) return false;
   const ph = S.report.phase;
@@ -945,7 +946,8 @@ function phaseBanner() {
     const msg = { pre: 'Pre-report: register the reference documents, the parameters to verify and the area. Then move it to Field.',
       field: 'Field: take the photos, write preliminary captions and findings, fill in the results. Save, then move it to Close-out.',
       closeout: 'Close-out: review captions and findings, write the conclusion, preview the draft and issue the report.' }[ph];
-    return `<div class="banner info">${msg}</div>`;
+    const both = ph === 'field' && office() ? ' The tablet can also work on this phase: use one device per report, otherwise the newest save replaces the other (kept in _superseded).' : '';
+    return `<div class="banner info">${msg}${both}</div>`;
   }
   const where = ph === 'field' ? 'on the tablet' : 'in the office (PC)';
   return `<div class="banner warn">This report is in the ${PHASE_LABEL[ph]} phase, which is edited ${where}. It is read only here.</div>`;
@@ -1081,8 +1083,9 @@ function reportView() {
   }).join('');
   parts.push(card(`Pictures (${r.photos.length})`, `
     ${phs ? `<div class="photos">${phs}</div>` : '<div class="empty">No photos yet.</div>'}
-    ${eadd ? `<div class="row" style="margin-top:10px"><button class="btn gold" data-act="photo-take">Take photo</button>
-      <button class="btn" data-act="photo-add">Add from gallery</button></div>` : ''}`, { locked: !eph }));
+    ${eadd ? `<div class="row" style="margin-top:10px">${office() ? `<button class="btn gold" data-act="photo-add">Add photos</button>`
+      : `<button class="btn gold" data-act="photo-take">Take photo</button>
+      <button class="btn" data-act="photo-add">Add from gallery</button>`}</div>` : ''}`, { locked: !eph }));
 
   // ---- Conclusion ----
   if (r.phase === 'closeout' || r.phase === 'issued' || r.conclusion) {
@@ -1344,9 +1347,9 @@ async function moveNext() {
   if (ph === 'field' && !r.header.inspectionDate) missing.push('Date of inspection');
   if (missing.length) return alertBox('Missing information', 'Fill in: ' + missing.join(', '));
   let text = `Move ${r.reportId} to ${PHASE_LABEL[to]}?`;
-  if (ph === 'pre') text += ' From then on it is edited on the tablet.';
+  if (ph === 'pre') text += ' From then on the field work is done on the tablet or here on the PC.';
   if (ph === 'field') text += ` The field captions and findings will be kept as a record.${r.photos.length ? '' : ' Warning: there are no photos.'}`;
-  if (ph === 'field' && office()) text += ' Normally this is done on the tablet: make sure the latest field package was uploaded.';
+  if (ph === 'field' && office()) text += ' If the field work was done on the tablet, make sure its latest package was uploaded first.';
   if (!await confirmBox('Move to next phase', text, `Move to ${PHASE_LABEL[to]}`)) return;
   await askUser();
   if (ph === 'field') freezeFieldRecord();
