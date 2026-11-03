@@ -217,14 +217,15 @@
       text: 'iPhone HEIC photos to JPG, on any device.' },
     { name: 'Deficiency Photo Names', icon: 'tag', color: 'g', tag: 'Office', groups: ['office'], status: 'Planned',
       text: 'Rename deficiency photos to DEF_WBS_ITEM_BEFORE / AFTER.' },
-    // dashboards stay in SharePoint (GMIN login); the hub only links to them
+    // dashboards stay in SharePoint (GMIN login); the hub only links to them.
+    // Deficiencies is the exception: a password-protected copy lives here, full screen on the tablet
     ...[
-      ['ITR Control', 'ITR%20Dashboard/published/ITR_Control_latest.html', 'r', 'ITR progress and status by WBS.'],
-      ['Deficiencies', 'Deficiency%20Dashboard/published/Deficiency_Dashboard_latest.html', 'r', 'Open and closed deficiencies by priority and area, with photos.'],
-      ['Process Plant 600', 'Process%20Plant%20600%20Dashboard/published/Process_Plant_600_latest.html', 'g', 'Process Plant (WBS 600) subsystem detail.'],
-      ['Construction Completion', 'Construction%20Completion%20Dashboard/published/Construction_Completion_latest.html', 'y', 'Construction completion status by area.'],
-      ['Handover Control', 'Handover%20Dashboard/published/Handover_Control_latest.html', 'g', 'Handover pipeline, actual vs forecast by month, by WBS group.']
-    ].map(([name, path, color, text]) => ({ name, href: SP_DASH + path, external: true, icon: 'chart', color, tag: 'Dashboard', groups: ['dashboards'], ready: true, text }))
+      ['ITR Control', SP_DASH + 'ITR%20Dashboard/published/ITR_Control_latest.html', 'r', 'ITR progress and status by WBS.'],
+      ['Deficiencies', 'deficiency-dashboard/', 'r', 'Open and closed deficiencies by priority and area, with photos.'],
+      ['Process Plant 600', SP_DASH + 'Process%20Plant%20600%20Dashboard/published/Process_Plant_600_latest.html', 'g', 'Process Plant (WBS 600) subsystem detail.'],
+      ['Construction Completion', SP_DASH + 'Construction%20Completion%20Dashboard/published/Construction_Completion_latest.html', 'y', 'Construction completion status by area.'],
+      ['Handover Control', SP_DASH + 'Handover%20Dashboard/published/Handover_Control_latest.html', 'g', 'Handover pipeline, actual vs forecast by month, by WBS group.']
+    ].map(([name, href, color, text]) => ({ name, href, external: href.startsWith(SP_DASH), locked: true, icon: 'chart', color, tag: 'Dashboard', groups: ['dashboards'], ready: true, text }))
   ];
   const GROUPS = [
     { id: 'all', label: 'All tools', icon: 'home' }, { id: 'field', label: 'Field', icon: 'field' },
@@ -248,7 +249,7 @@
       <article class="card ${t.ready ? '' : 'soon'}">
         <div class="top"><div class="ico ${t.color}">${svg(t.icon)}</div><span class="tag">${esc(t.tag)}</span></div>
         <h3>${esc(t.name)}</h3><p>${esc(t.text)}</p>
-        ${t.ready ? `<a class="act" href="${t.href}"${t.external ? ' target="_blank" rel="noopener"' : ''}>${t.external ? `${svg('lock')} Open, GMIN login` : 'Open'} ${svg('arrow')}</a>` : `<span class="act">${esc(t.status)}</span>`}
+        ${t.ready ? `<a class="act" href="${t.href}"${t.external ? ' target="_blank" rel="noopener"' : ''}>${t.locked ? `${svg('lock')} Open, ${t.external ? 'GMIN login' : 'password'}` : 'Open'} ${svg('arrow')}</a>` : `<span class="act">${esc(t.status)}</span>`}
       </article>`).join('') : '<div class="empty">No tool matches.</div>';
   }
 
